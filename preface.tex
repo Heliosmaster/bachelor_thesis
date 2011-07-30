@@ -1,0 +1,31 @@
+Nell'ambito multidisciplinare dell'elaborazione delle immagini, un problema di rilievo \`{e} costituito dalla individuazione delle tecniche numeriche per rimuovere il fenomeno chiamato rumore o \emph{noise}, ossia per ricostruire immagini degradate da effetti a carattere aleatorio. Questo problema \`{e} anche noto con il nome di \emph{denoising}.
+
+Il tipo di \emph{noise} che ha avuto pi\`{u} attenzione in letteratura \`{e} quello di lettura, cio\`{e} dovuto all'amplificazione, da parte di un sistema elettronico, del segnale in uscita dal sistema di sensori, che trasformano i segnali da analogici a digitali. Per questo rumore, di tipo additivo, il modello pi\`{u} accreditato \`{e} quello di una distribuzione Gaussiana.
+
+Un altro tipo di \emph{noise} \`{e} quello fotonico, che trae origine dalle fluttuazioni nel numero di fotoni che arrivano sul rivelatore, e che pu\`{o} essere descritto statisticamente attraverso una distribuzione multivariata di Poisson.
+
+In alcuni casi, come ad esempio nella radiografia digitale, nella tomografia ad emissione, nella microscopia confocale a fluorescenza e nell'astronomia con telescopi ottici o a infrarossi, il rumore fotonico \`{e} prevalente su quello additivo. Questo fatto porta alla necessit\`{a} di generalizzare l'approccio usato per eliminare il rumore Gaussiano al rumore Poissoniano, riconducendo il problema alla minimizzazione di una funzione convessa, fortemente non lineare, nel suo dominio.
+
+Nel caso dei regolarizzatori che preservano i bordi, come per il funzionale di \emph{Total Variation}, poich\'{e} la funzione \`{e} anche non differenziabile, viene introdotto un grado di ulteriore complessit\`{a} nella ricerca di un metodo numerico efficiente per la risoluzione del problema.
+
+Scopo della tesi \`{e} descrivere il problema di denoising di immagini degradate da rumore Poissoniano e analizzare dal punto di vista teorico e numerico i metodi che rappresentano lo stato dell'arte per regolarizzazione con la funzione \emph{Total Variation}.
+
+Nel primo capitolo si descrive il processo di formazione delle immagini, evidenziando l'origine delle varie perturbazioni che possono degradarle. Particolare attenzione si \`{e} data alla differenziazione fra le caratteristiche del rumore di tipo Gaussiano e quello di tipo Poissoniano.  Si \`{e} inoltre mostrato come il problema di ricostruzione di immagini sia un problema inverso mal posto nel senso di Hadamard, e quindi potenzialmente di difficile risoluzione; per questo motivo, nell'ambito della teoria Bayesiana, \`{e} stato mostrato come l'approccio di massima verosimiglianza e le tecniche di regolarizzazione consentano di ricondurre il problema alla soluzione di un problema di minimo vincolato.
+
+Nel secondo capitolo sono stati analizzati dal punto di vista teorico i metodi di tipo Bregman e Split Bregman, mettendo in evidenza gli aspetti implementativi in termini di complessit\`{a} computazionale. Tali metodi possono essere ricondotti al metodo alle direzioni alternate dei moltiplicatori, ma possono essere interpretati anche come l'algoritmo di Douglas-Rachford, un particolare metodo \emph{proximal point}, applicato alla formulazione duale del problema di minimo. Dai noti risultati teorici su questi metodi, \`{e} possibile ricavare la convergenza dei metodi PIDAL e PIDSplit+, due metodi Split Bregman appositamente progettati per ricostruire dati affetti da rumore Poissoniano con regolarizzazione data dalla \emph{Total Variation}.
+
+Nel terzo capitolo viene esaminata la formulazione primale-duale del problema di minimo, che porta a risolvere un problema di sella per una funzione convessa-concava. Esprimendo il problema variazionale come una particolare disequazione variazionale monotona su un dominio esprimibile come prodotto cartesiano dei domini delle variabili primale e duale, si \`{e} considerata la classe dei metodi extragradiente, adattando tale approccio al problema in esame.
+
+In particolare viene descritto il metodo AEM, in cui ogni passo esegue una serie di aggiornamenti successivi di tipo Gauss-Seidel delle variabili primale e duale mediante opportuni passi di gradiente proiettato.
+
+Nel quarto capitolo vengono infine svolte alcune simulazioni numeriche, sia considerando problemi test simulati, ovvero problemi per i quali si ha a disposizione l'immagine priva di rumore, che problemi reali. Per la prima classe di questi problemi test sono stati studiati e confrontati il metodo AEM e il metodo PID-
+Split+, sia in termini di accuratezza che di efficienza numerica. Particolare enfasi \`{e} stata data all'analisi della velocit\`{a} di convergenza, sia per quanto riguarda le prime iterazioni, che rispetto al comportamento asintotico.
+
+Per quanto riguarda i problemi di tipo reale, invece,  \`{e} stato dapprima stimato il parametro di regolarizzazione, usando sia il principio di discrepanza, recentemente enunciato in \citep{discr_princ}, che analizzando il comportamento delle soluzioni ottenute.
+
+Sulla base dei valori ottenuti per il parametro di regolarizzazione, sono stati confrontati i metodi PIDSplit+ e AEM, sperimentando un criterio di arresto automatico. L'analisi sperimentale ha messo in evidenza un'ottima efficienza del metodo PIDSplit+ per opportune scelte di un parametro del metodo, che deve essere stimato dall'utente. D'altro canto, il metodo AEM ha messo in evidenza un buon comportamento, sia dal punto di vista dell'efficienza che dell'accuratezza dei risultati ottenuti, senza avere la necessit\`{a} di stimare alcun parametro, poich\'{e} la lunghezza del passo da cui dipende ogni iterazione \`{e} calcolata adattivamente.
+
+In Appendice A, sono state incluse le definizioni di alcune matrici frequenti nei problemi di elaborazioni di immagini, come le matrici di Toepliz e quelle circolanti, mettendo in evidenza come le operazioni di base con queste matrici possano essere realizzate mediante la Trasformata Discreta di Fourier, efficientemente calcolabile con l'algoritmo Trasformata Veloce di Fourier. Inoltre, sono stati riportati in sintesi i principali risultati teorici sull'ottimizzazione vincolata (condizioni necessarie e sufficienti del primo e secondo ordine) e alcune importanti propriet\`{a} delle funzioni
+convesse e monotone.
+
+Nell'Appendice B, infine, sono stati allegati i codici MATLAB usati. 

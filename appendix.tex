@@ -1,0 +1,412 @@
+\appendix
+\chapter{}
+
+\section{Notable matrix structures} \label{app:matrices}
+
+\subsection{Toepliz matrices}
+\label{sec:matrices}
+
+A \emph{Toepliz matrix}, named after the mathematician Otto Toepliz, is a matrix in which each descending diagonal from left to right is costant, as in the following example:
+
+$$
+\begin{pmatrix}
+a & b & c & d & e \\
+f & a & b & c & d \\
+g & f & a & b & c \\
+h & g & f & a & b \\
+i & h & g & f & a \\
+\end{pmatrix}
+$$
+
+More generally, as a $n \times n$ matrix, a Toepliz matrix has the form:
+
+$$T = \begin{pmatrix}
+a_0 & a_{-1} & a_{-2} & \cdots & \cdots & a_{-n+1} \\
+a_1 & a_0 & a_{-1} & \ddots & \ddots & a_{-n+2} \\
+a_2 & a_1 & a_0 & \ddots & \ddots &\vdots \\
+\vdots & \ddots & \ddots & \ddots & a_{-1} & a_{-2} \\
+\vdots & \ddots & \ddots & a_1 & a_0 & a_{-1} \\
+a_{n-1} & \cdots & \cdots & a_2 & a_1 & a_0
+\end{pmatrix}
+$$
+
+$T$ is uniquely determined by their diagonals, thus one could consider their position with respect to the main diagonal and name the elements
+
+$$a_i \left\{ \begin{array}{ll}
+i=0 &\qquad \mbox{ the main diagonal} \\
+i=1 &\qquad \mbox{ the first diagonal below}\\
+i=-1&\qquad \mbox{ the first diagonal above} \\
+\vdots & \qquad \qquad \vdots
+\end{array} \right.$$
+
+In a block-Toepliz matrix each element is a matrix as well; if such element is a Toepliz matrix, we have a block-Toepliz with Toepliz blocks matrix (BTTB).
+
+An interesting properties of Toepliz matrices is that the convolution operation can be constructed as a matrix multiplication, where one of the inputs is converted into a Toeplitz matrix.
+
+\subsection{Fourier matrices}
+
+A Fourier matrix, which represent the Fourier transform, is a matrix of order $n$
+
+$$F_n = \dfrac{1}{\sqrt{n}}\begin{pmatrix}
+1 & 1 & 1 & \dots & 1 \\
+1 & w & w^2 & \dots & w^{n-1} \\
+1 & w^2 & w^4 & \dots & w^{2(n-1)} \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+1 & w^{n-1} & w^{2(n-1)} & \dots & w^{(n-1)(n-1)}
+\end{pmatrix}$$
+
+where $w$ is a $n$-th root of 1:
+
+$$ w= e^{-i \frac{2\pi}{n}} = \cos \left(\dfrac{2\pi}{n} \right) - i \sin \left( \dfrac{2\pi}{n} \right)$$
+
+and $i$ is the imaginary unit.
+
+Since $w^k$, $k=0,1,...$ is periodic with period $n$, $F_n$ is reduced to:
+
+$$F_n = \dfrac{1}{\sqrt{n}}\begin{pmatrix}
+1 & 1 & 1 & \dots & 1 \\
+1 & w & w^2 & \dots & w^{n-1} \\
+1 & w^2 & w^4 & \dots & w^{n-2} \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+1 & w^{n-1} & w^{n-2} & \dots & w
+\end{pmatrix}$$
+
+
+A \emph{discrete Fourier transform} (DFT), denoted by $\mathcal{F}$, of a vector $f \in \R^n$ is the matrix-vector product
+
+$$\mathcal{F}(f) = F_n f$$
+
+Fourier matrices has interesting properties: if we denote the matrix conjugate traspose of $F_n$ with $F_n^*$, we have $F_n^* = \overline{F_n}^T$,
+
+$F_n$ and $F_n^*$ are symmetric and $F_n$ is unitary, i.e.
+
+$$F_n^* F_n = F_n F_n^* = I \qquad \mbox{ or } \qquad F_n^{-1} = F_n^*$$
+
+The DFT of a vector of $n$ entries can be computed using a \emph{fast Fourier transform} (FFT) algorithm with complexity $O(n \log_2 n)$ and similarly for the inverse FFT.
+
+The Fourier transform of a 2-D $n \times n$ image $f(x,y)$ can then be expressed using the Kroenecker product of $F_n$:
+
+$$(F_n \otimes F_n) vec(f)$$
+
+where $vec(f)$ is an array of $n^2$ entries column-wise ordered.
+
+If we consider the $n$ matrix form of the image, we can show that
+
+$$mat \biggl( \left(F_n \otimes F_n\right) vec(f)\biggr) = F_n f F_n^T = F_n f F_n$$
+
+\subsection{Circulant matrices} \label{app:circ}
+
+A circulant matrix  $n\times n$ is a particular Toepliz matrix of the form
+
+$$C = \begin{pmatrix}
+c_0 & c_{n-1} & \dots & c_2 & c_1 \\
+c_1 & c_0 & c_{n-1} & \dots & c_2 \\
+\vdots & \ddots & \ddots & \ddots & \vdots \\
+c_{n-2} & \ddots & c_1 & c_0 & c_{n-1} \\
+c_{n-1} & c_{n-2} & \dots & c_1 & c_0 \\
+\end{pmatrix}
+$$
+
+$C$ is then completely determined by its first column
+
+$$c=(c_0,c_1,\dots, c_{n-1})^T$$
+
+If the elements of this matrix are matrices as well, we have a block-circulant matrix, if such matrices are circulant, we have a block-circulant with circulant blocks matrix (BCCB).
+
+Any Circulant matrix $C$ can be diagonalized by the Fourier matrix \citep{circulant}:
+
+$$C = F_n^* \Lambda F_n $$
+
+where $F_n$ is the Fourier matrix of order $n$, $\Lambda$ is the diagonal matrix of the eigenvalues of $C$ and $F_n^*$ are the corresponding eigenvectors.
+
+We observe that
+
+$$F_n C = \Lambda F_n$$
+
+and if we consider only the first column of the matrix equality, we have
+
+$$F_n c = \dfrac{1}{\sqrt{n}} (\lambda_1,...,\lambda_n)^T$$
+
+since the first column of $F_n$ has all entries equal to $\dfrac{1}{\sqrt{n}}$.
+
+Then $diag{\Lambda} =  \sqrt{n} \mathcal{F}(c)$
+
+Similarly, in a Block Circulant matrix, each block is decomposed using the Fourier matrix $F_n$: $C_k = F_n^* \Lambda_k F_n$, where $\Lambda_k$ is the diagonal matrix of the eigenvalues of each block $C_k$.
+
+If we have a BCCB matrix $\mathbf{C}$, it is diagonalized\citep{circulant}:
+
+$$\mathbf{C} = (F_n \otimes F_n)^* \Lambda (F_n \otimes F_n)$$
+
+where
+
+$$\Lambda = \sum_{k=0}^{n-1} (\Omega_n^k \otimes \Lambda_k) \qquad \mbox{ and } \qquad \Omega_n = diag(1,w,w^2,...,w^{n-1})$$
+
+This relationship between circulant matrices and Fourier matrices is very useful: if we consider $Cx=b$, where $C$ is circulant, we can write such equation as $c * x = b$, where $c$ is, as previously, the first column of $C$, $*$ denotes the convolution operator, and both $x$ and $b$ are cyclically extended in each direction.
+
+Using the result of the circular convolution theorem, we can trasform the cyclic convolution into component-wise multiplication using the DFT:
+
+$$\mathcal{F}(c * x) = \mathcal{F}(c) \mathcal{F}(x) = \mathcal{F}(b)$$
+
+Then we have
+
+$$x = \mathcal{F}^{-1} \left(\dfrac{\mathcal{F}(b)}{\mathcal{F}(c)}\right)$$
+
+If we use the FFT algorithm, such equation is a very efficient way to compute $x$.
+If we have to compute the matrix product vector $Cx$ we have
+
+$$\mathcal{F}^{-1} (\mathcal{F}(c) \cdot \mathcal{F}(x) ) = b $$
+
+\section{Constrained optimization}
+
+A general constrained optimization problem can be expressed as:
+
+\begin{align}
+\label{min}
+\minimize_{x \in \R^n} f(x) \qquad \mbox{subject to} \; \left\{ \begin{array}{l}
+c_i(x) = 0 \\
+c_j(x) \geq 0 \\
+\end{array} \right. \qquad
+\end{align}
+
+where $c_i(x)$ and $c_j(x)$ (with $i \in \mathcal{E}, j \in \mathcal{I}$) are vectorial functions at least $C^2$, called, respectively, the \emph{equality constraints} and \emph{inequality constraints}. $f$ is called the \emph{objective function}.
+
+Furthermore, we define the \emph{feasible set} $\Omega$ to be the set of points $x$ that satisfy the constraints, that is
+
+$$\Omega = \{ x | h_i (x) = 0 \;,\; g_i(x) \geq 0\}$$
+
+With this notation \eqref{min} can be written more compactly as
+
+$$\minimize_{x \in \Omega} f(x) $$
+
+The solution of \eqref{min} is a point of \emph{local minimum}, defined more rigorously as
+
+\begin{defi}
+A point $x^* \in \R^n$  is a point of local minimum if $x^* \in \Omega$ and exists a neighborhood $U$ of $x^*$ such that $f(x) \geq f(x^*) \; \forall x \in U \cap \Omega$.
+\end{defi}
+
+\subsection{First order necessary conditions}
+
+In order to give the first order necessary conditions, a couple of definitions and an assumption, the \emph{constraint qualification}, is required, to foresee any degenerate behaviour of the function.
+
+\begin{defi}
+The \emph{Lagrangian} function for the constrained optimization problem \eqref{min} is:
+
+$$\mathcal{L}(x,\lambda) = f(x) - \sum_{i \in \mathcal{E} \cup I} \lambda_i c_i (x)$$
+\end{defi}
+
+\begin{defi}
+The \emph{active set} $A(x)$ at any feasible point $x$ is the set
+
+$$\mathcal{A}(x^*) = \mathcal{E} \cup \{ i \in \mathcal{I} | c_i(x^*) = 0\}$$
+\end{defi}
+
+\begin{defi}
+Given the point $x^*$, we say that the \emph{linear indipendence constraint qualifications} (LICQ) holds if the set of active constraint gradient $\{ \nabla c_i (x^*)| i \in \mathcal{A}(x^*)\}$ is linearly independent.
+\end{defi}
+
+This condition allows the statement of the following optimality conditions for a general nonlinear programming problem as in \eqref{min}. They are called the first-order conditions because they concern the properties of the gradients of the objective and constraint functions.
+
+\begin{theorem}[First-order necessary condition]
+
+Suppose that $x^*$ is a local solution of \eqref{min} and that LICQ holds at $x^*$. Then there is a Lagrange multiplier vector $\lambda^*$ with components $\lambda_i^*$ ($i \in \mathcal{E}\cup \mathcal{I}$) such that the following conditions are satisfied at $(x^*,\lambda^*)$:
+
+\begin{align}
+\label{KKT}
+\begin{aligned}
+\nabla_x \mathcal{L}(x^*,\lambda^*) &= 0  && \\
+\\
+c_i (x^*) &= 0 && \forall i \in \mathcal{E} \\
+\\
+c_i (x^*) &\geq 0 && \forall i \in \mathcal{I} \\
+\\
+\lambda_i^* &\geq 0 && \forall i \in \mathcal{I} \\
+\\
+\lambda_i^* c_i (x^*) &= 0 && \forall i \in \mathcal{E} \cup \mathcal{I}
+\end{aligned}
+\end{align}
+\begin{proof}
+See \citep{nocedal} p. 331.
+\end{proof}
+\end{theorem}
+
+The conditions expressed in this theorem are often known as the \emph{Karush-Kuhn-Tucker conditions} (KKT).
+
+\subsection{Second order necessary and sufficient conditions}
+
+\begin{defi}
+Given a point $x^*$ and the active constraint set $\mathcal{A}(x^*)$, the set $F_1$  is defined by:
+
+$$F_1 = \left\{ \alpha d \left| \begin{array}{ll}
+d^T \nabla c_i(x^*) = 0 & \forall i \in \mathcal{E} \\
+\\
+d^T \nabla c_i(x^*) \geq 0 & \forall i \in \mathcal{I} \end{array} \right. \right\} $$
+\end{defi}
+
+Such set $F_1$ is a cone, and when a constraint qualification as LICQ is satisfied, it represent the \emph{tangent cone} to the feasible set at $x^*$.
+
+\begin{defi}
+Given $F_1$ and the Lagrange multiplier vector $\lambda^*$ satisfying the KKT conditions \eqref{KKT}, we define the subset $F_2(\lambda^*)$ of $F_1$ by:
+
+$$ F_2 (\lambda^*) = \left\{ w \in F_1 \left| w^T \nabla c_i(x^*) = 0 \right. \qquad \forall i \in \mathcal{A}(x^*) \cap \mathcal{I} \; \mbox{ with }\; \lambda_i^* > 0 \right\} $$
+\end{defi}
+
+Such subset $F_2(\lambda^*)$ contains the directions $w$ that tend to ``adhere'' to the active inequality constraints for which the Lagrange multiplier component $\lambda_i^* > 0$, as well as to the equality constraints. This set is important because contains directions from $F_1$ for which it is not clear from first derivative information alone whether $f$ will increase or decrease.
+
+Then, the necessary condition involving the second derivatives is described by the following theorem:
+
+\begin{theorem}[Second-order necessary condition]
+Suppose that $x^*$ is a local solution of \eqref{min} and that LICQ condition is satisfied. Let $\lambda^*$ be a Lagrange multiplier vector such that the KKT conditions \eqref{KKT} are satisfied and let $F_2(\lambda^*)$ be defined as above.
+
+Then
+
+$$ w^T \nabla_{xx} \mathcal{L}(x^*,\lambda^*) w \geq 0 \qquad \forall w \in F_2(\lambda^*)$$
+
+\begin{proof}
+See \citep{nocedal}, p. 343.
+\end{proof}
+\end{theorem}
+
+The second-order sufficient condition looks very much like the necessary conditions just stated, but it differs in that the constraint qualification is not required and the inequality is replaced by a strict inequality.
+
+\begin{theorem}[Second-order sufficient condition]
+Suppose that for some feasible point $x^* \in \R^n$ there is a Lagrange multiplier vector $\lambda^*$ such that KKT conditions \eqref{KKT} are satisfied.
+
+Suppose also that
+
+$$ w^T \nabla_{xx} \mathcal{L}(x^*,\lambda^*) w > 0 \qquad \forall w \in F_2(\lambda^*), w \neq 0$$
+
+Then $x^*$ is a strict local solution for \eqref{min}.
+
+\begin{proof}
+See \citep{nocedal}, p. 345.
+\end{proof}
+\end{theorem}
+
+\subsection{Convex optimization} \label{app:convex}
+
+\begin{defi}
+A function $f: S \to \R $ is convex if $\forall x_1,x_2 \in S$ we have that
+
+$$f\Bigl((1-\rho)x_1+\rho x_2\Bigr) \leq (1-\rho)f(x_1)+\rho f(x_2)$$
+
+with $\rho \in (0,1)$.
+
+\end{defi}
+
+Convex functions are very important in numerical optimization, as shows the following theorem:
+
+\begin{theorem}
+A convex problem satisfies one of the following:
+
+\begin{itemize}
+\item there is not a solution to the minimum problem
+\item every local solution is a global solution
+\end{itemize}
+
+\begin{proof}
+
+By \emph{reductio ad absurdum} suppose that exists a local solution $x^*$ which is not a global solution, that is
+
+$$\exists z \; \mbox{ such that } \; f(z ) \leq f(x^*)$$
+
+$f$ is convex:
+
+$$f\Bigl((1-\rho) x^* + \rho z \Bigr) \leq (1-\rho)f(x^*) + \rho f(z) = f(x^*) + \rho(f(z)-f(x^*)) $$
+
+Note that this last term $\rho\Bigl(f(z)-f(x^*)\Bigr) \leq 0$ since $ \rho \neq 0$.
+
+If $x = x^* + \rho (z-x^*) = (1 -\rho) x^* + \rho z$, we have that
+
+$$f(x) \leq f(x^*) \Rightarrow \nexists \delta > 0 \; \mbox{ such that }\; f(x) \geq f(x^*)$$
+
+that means $x^*$ is not a local solution, which contradicts our supposition.
+\end{proof}
+\end{theorem}
+
+In order to ensure the existence of a global minimum, we require the function to be coercive:
+
+\begin{defi}
+A function $f: \R^n \to \R^n$ is \emph{coercive} if
+
+$$\lim_{||x|| \to \infty} f(x) = + \infty$$
+\end{defi}
+
+Convex functions have other interesting properties:
+
+\begin{theorem} \label{app:monotone}
+Let $f: R^n \to R^n$ be a convex function.
+
+Then $\nabla f(x)$ is a monotone function.
+
+\begin{proof}
+
+Since $f(x)$ is convex, we have that
+
+\begin{align*}
+f(x) &\geq f(y) + \nabla f(y)^T (x-y) \\
+f(y) &\geq f(x) + \nabla f(x)^T (y-x) \\
+\end{align*}
+
+Adding the two equations, we have:
+
+$$(\nabla f(y) - \nabla f(x))^T (y-x) \geq 0$$
+\end{proof}
+\end{theorem}
+
+\begin{theorem}
+Let $f(x,y)$ be convex with respect to $x$ and concave with respect to $y$.
+
+Then
+
+$$\begin{pmatrix} \nabla_x f(x,y) \\
+\\
+-\nabla_y f(x,y) \end{pmatrix}$$
+
+is monotone.
+
+\begin{proof}
+
+Since
+
+\begin{align*}
+f(x_i,y_i) &\geq f(x_i',y_i) + \nabla_x f(x_i',y_i) (x_i - x_i') \\
+f(x_i,y_i) &\geq f(x_i,y_i') + \nabla_y f(x_i,y_i') (y_i - y_i') \\
+\end{align*}
+
+we have that
+
+\begin{align*}
+(\nabla_x &f(x_1,y_1) - \nabla_x f(x_2,y_2))^T (x_1-x_2) + (\nabla_y f(x_1,y_2) + \\
+&- \nabla_y f(x_2,y_1))^T (y_1-y_2) \geq 0
+\end{align*}
+\end{proof}
+\end{theorem}
+
+\chapter{Matlab scripts}
+
+In this chapter we will provide the MATLAB scripts used throughout this thesis, in alphabetical order:
+
+\section{AEM.m}
+\lstinputlisting{src/AEM.m}
+
+\section{app.m}
+\lstinputlisting{src/app.m}
+
+\section{beta\_array.m}
+\lstinputlisting{src/beta_array.m}
+
+\section{beta\_bisez.m}
+\lstinputlisting{src/beta_bisez.m}
+
+\section{iter\_AEM.m}
+\lstinputlisting{src/iter_AEM.m}
+
+\section{iter\_PID.m}
+\lstinputlisting{src/iter_PID.m}
+
+\section{PIDSplit\_plus.m}
+\lstinputlisting{src/PIDSplit_plus.m}
+
+\section{prisma.m}
+\lstinputlisting{src/prisma.m}
+

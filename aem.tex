@@ -1,0 +1,255 @@
+\chapter{Alternating Extragradient Method}
+
+\section{Primal-Dual formulation of the image restoration problem}
+
+In section \ref{bayesian_framework}, we observed that image restoration, in the Bayesian framework, is obtained by solving the optimization problem \eqref{map}, with $x \in X$, where $X$ is defined by \eqref{domain}.
+
+Being under the hypotesis of Poisson noise, and focusing as before on the edge-preserving regularization via Total Variation \eqref{defTV}, the so-called \textbf{primal} formulation of the problem is:
+
+\begin{align}
+\label{KL-TV}
+\min_{x \in X} \left\{ \sum_{i \in S} \left[f_i \log{\frac{f_i}{x_i}}+x_i - f_i\right] + \beta \sum_{i \in S} ||A_i x||_2 \right\}
+\end{align}
+
+where $A_i$ is the approximation of the gradient of $x$ at the pixel $i$ as seen in \eqref{matrixA}.
+
+There are a class of methods that require a slightly different formulation of this problem: let us consider, in general, $a \in \R^2$; since the definition of norm in $\ell_2$ can be formulated as:
+
+$$||a||_2 = \sup_{z \in \R^2 : ||z||_2 \leq 1} z^T a$$
+
+we have that
+
+\begin{align}
+\label{Aix}
+\sum_{i=1}^n ||A_i x||_2 = \sup_{y \in Y} \sum_{i=1}^n y_i^T A_i x \qquad \mbox{ with} \; y_i = \begin{pmatrix} y_1^{(i)} \\
+y_2^{(i)}\end{pmatrix}
+\end{align}
+
+where $Y = \left\{ y \in \R^{2n} \left |\; ||y_i||_2 \leq 1\;, j=1,...,n\right. \right\}$
+
+Putting
+
+$$ y = \left(y_1^{(1)},y_2^{(1)},y_1^{(2)},y_2^{(2)},\dots,y_1^{(n)},y_2^{(n)}\right)
+\qquad A = \begin{pmatrix} A_1 \\
+\vdots \\
+A_n \end{pmatrix} \qquad x = \begin{pmatrix} x_1 \\
+\vdots \\
+x_n \end{pmatrix} $$
+
+then \eqref{Aix} can be also written as the matrix product: $\; \displaystyle \sup_{y \in Y} y^T Ax$.
+
+The problem \eqref{KL-TV} can now be rewritten as
+
+$$\min_{x \in X} \left\{ \sum_{i \in S} \left[f_i \log{\frac{f_i}{x_i}}+x_i - f_i\right] + \beta \sup_{y \in Y} y^T Ax \right\}$$
+
+obtaining the discrete \textbf{primal-dual} formulation of the problem \eqref{KL-TV}:
+
+\begin{align}
+\label{primal-dual}
+\min_{x \in X} \max_{y \in Y} F(x,y)
+\end{align}
+
+with
+
+\begin{align}
+\label{saddle}
+F(x,y) = \left\{ \sum_{i \in S} \left[f_i \log{\frac{f_i}{x_i}}+x_i - f_i\right] + \beta y^T Ax \right\}
+\end{align}
+
+The problem  \eqref{KL-TV} has an unique solution $x^* \in X$. Then we can restrict the minimization problem to a closed bounded set $\overline{X} \subset X$, such that $x^* \in \overline{X}$. Since $Y$ is a bounded set and the functional $F$ is convex with respect to $x$ and concave with respect to $y$, the Minimax Theorem in \citep{rockafellar} guarantees the existence of at least one \emph{saddle-point}, that is a point $(x^*,y^*)$ such that
+
+$$F(x^*,y) \leq F(x^*,y^*) \leq F(x,y^*)$$
+
+This class of problems are often found in \emph{Variational Inequality Problems} (VIP).
+
+\section{Extragradient Methods}
+
+As suggested in \citep{aem}, one of the most effective approaches for a solution of saddle-point problems is the class of extragradient-type methods, whose iterative schemes consist in projection steps, along with a suitable choice of a steplength parameter.
+
+A solution $v^* = (x^*,y^*)$ of \eqref{primal-dual} satisfies also the VIP
+
+\begin{align}
+\label{vip}
+(v-v^*)^T \Phi(v^*) \geq 0 \qquad \forall v \in X \times Y
+\end{align}
+
+where
+
+$$\Phi(v) = \Phi(x,y) = \begin{pmatrix}
+\nabla_x F(x,y)^T \\
+\\
+-\nabla_y F(x,y)^T\end{pmatrix}
+$$
+
+A solution $v^*$ of \eqref{vip} satisfies the fixed point equation
+
+\begin{align}
+\label{proj}
+v^* = P_{X \times Y} (v^* - \alpha \Phi(v^*)) \qquad \forall \alpha > 0
+\end{align}
+
+where $P$ denotes the orthogonal projection operator, defined as
+
+$$y = P_\Omega (x) = \argmin_{z \in \Omega} ||x-z||_2^2$$
+
+Since the domain $X \times Y$ has a separable structure, \eqref{proj} holds if and only if
+
+\begin{align}
+\label{proj2-1} x^* &= P_X (x^* - \alpha \nabla_x F(x^*,y^*)) \\
+\notag \\
+\label{proj2-2} y^* &= P_Y (y^* - \alpha \nabla_y F(x^*,y^*))
+\end{align}
+
+Both these two projections are fairly easy to compute: \eqref{proj2-1} is a simple thresolding, while in \eqref{proj2-2} the projection onto $Y$ is defined as $(P_Y (y))_k = s_ky_k$, with
+
+$$s_{2i-1} = s_{2i} = \dfrac{1}{\max\left\{1,\sqrt{y_{2i-1}^2+y_{2i}^2}\right\}} \qquad i=1,\dots,n$$
+
+Due to the structure of the constraints in \eqref{primal-dual}, the projection methods are attractive; however, the effectiveness of a projection method as such is deeply related to the choice of the steplength parameter.
+
+Since $F$ is concave with respect to $y$ and convex with respect to $x$, $\Phi(v)$ is a monotone function (see Theorem \ref{app:monotone}). A well known scheme to solve monotone variational inequality problems as \eqref{vip} is the extragradient method defined by the iteration:
+
+\begin{align}
+\label{extragradient_method}
+\begin{aligned}
+\bar{v}^{(k)} &= P_{X \times Y} \left(v^{(k)}-\alpha_k \Phi\left(v^{(k)}\right)\right) \\
+v^{(k+1)} &= P_{X \times Y} \left(v^{(k)} - \alpha_k \Phi\left(\bar{v}^{(k)}\right)\right)
+\end{aligned}
+\end{align}
+
+where $\alpha_k$ is the steplength.
+
+There are mainly two strategies about the choice of such steplength $\alpha_k$: it can be held fixed and, usually, its value depends on an \emph{a priori} estimate of the Lipschitz constant of $\Phi$; otherwise it can be adaptively updated at each step, satisfying each time the sufficent condition for convergence of the method. The second choice is often the best, since an \emph{a priori} estimate of Lipschitz constant could be difficult.
+
+An adaptive rule to select $\alpha_k$ is to define the steplength so that the following condition is satisfied:
+
+$$1-\alpha_k^2 \dfrac{\left|\left|\Phi\left(v^{(k)}\right) - \Phi\left(\bar{v}^{(k)}\right)\right|\right|_2^2}{\left|\left|v^{(k)}-\bar{v}^{(k)}\right|\right|_2} > 0 $$
+
+In practice, such $\alpha_k$ is determined by a backtracking procedure which guaratnees the convergence of the method under suitable monotonicity and Lipschitz conditions on $\Phi$ \citep{khobo}.
+
+\section{Alternating extragradient method}
+
+Following the strategy in \citep{khobo}, we can state a method for saddle point problems. The iterate $v^{(k)}$ is split in two successive iterates $x^{(k)}$ and $y^{(k)}$.
+
+The choice of the steplength is adaptive and, furthermore, there is not explicit use of the Lipschitz constant of $\Phi$ , but only a local approximation of it is used.
+
+The method is the following:
+
+\begin{alignat}{2}
+&\label{aem-1} \bar{y}^{(k)} &&= P_Y\left(y^{(k)} + \alpha_k \nabla_y F(x^{(k)},y^{(k)})\right) \\
+\notag \\
+&\label{aem-2} x^{(k+1)} &&= P_X\left(x^{(k)} + \alpha_k \nabla_x F\left(x^{(k)},\bar{y}^{(k)}\right)\right) \\
+\notag \\
+&\label{aem-3} y^{(k+1)} &&= P_Y\left(y^{(k)} + \alpha_k \nabla_y F\left(x^{(k+1)},y^{(k)}\right)\right)
+\end{alignat}
+
+with the steplength $\alpha_k$ is chosen in the bounded interval $[\alpha_{min}, \alpha_{max}]$ with $0<\alpha_{min}<\alpha_{max}$ and
+
+\begin{align}
+\left\{ \begin{array}{lll}
+1-2\alpha_k A_k - 2 \alpha_k^2 B_k^2 & \geq & \epsilon \\
+\\
+1-2\alpha_k C_k & \geq & \epsilon \end{array} \right.
+\end{align}
+
+
+where $\epsilon \in (0,1)$ is costant and
+
+\begin{align}
+\begin{aligned}
+A_k &= \dfrac{\left|\left|\nabla_x F\left(x^{(k+1)},\bar{y}^{(k)}\right) - \nabla_x F\left(x^{(k)},\bar{y}^{(k)}\right)\right|\right|_2}{\left|\left|x^{(k+1)}-x^{(k)}\right|\right|_2} \\
+\\
+B_k &= \dfrac{\left|\left|\nabla_y F\left(x^{(k+1)},y^{(k)}\right) - \nabla_y F\left(x^{(k)},y^{(k)}\right)\right|\right|_2}{\left|\left|x^{(k+1)}-x^{(k)}\right|\right|_2} \\
+\\
+C_k &= \dfrac{\left|\left|\nabla_y F\left(x^{(k+1)},y^{(k)}\right) - \nabla_y F\left(x^{(k+1)},\bar{y}^{(k)}\right)\right|\right|_2}{\left|\left|y^{(k)}-\bar{y}^{(k)}\right|\right|_2}
+\end{aligned}
+\end{align}
+
+This scheme substantially consist in successive gradient ascent \eqref{aem-1} and descent \eqref{aem-2} steps, followed by an extragradient step \eqref{aem-3}. The method can also be written exchanging the roles of $x$ and $y$.
+
+In \citep{aem} it is outlined that such scheme has two main advantages to other methods:
+
+\begin{itemize}
+ \item it is defined only by means of explicits steps;
+ \item the convergence of the scheme is guaranteed without strict convexity assumptions, thanks to the extragradient step \eqref{aem-3}.
+\end{itemize}
+
+In particular, it is shown that the convergence is guaranteed by an appropriate selection of $\alpha_k$, and it is shown a self-adjusting backtracking procedure to compute it.
+
+\section{Algorithm AEM}
+
+This is the scheme of the algoritm \eqref{aem-1}-\eqref{aem-3}:
+
+\begin{algorithm}[H]
+\caption{Alternating Extragradient Method (AEM)}
+\begin{algorithmic}
+\STATE Choose $\left(x^{(0)},y^{(0)}\right) \in X \times Y$
+\STATE Set $\theta$
+\STATE Set $\epsilon \in (0,1)$
+\STATE Set $\alpha_{max} > 0$
+\STATE
+\end{algorithmic}
+
+Step 1:
+\begin{algorithmic}
+\STATE Choose $\alpha \leq \alpha_{max}$
+\STATE
+\end{algorithmic}
+
+Step 2: Compute tentative points
+\begin{algorithmic}
+\STATE $ \bar{y}^+ \gets P_Y \left(y^{(k)} + \alpha \nabla_y F\left(x^{(k)},y^{(k)}\right)\right)$
+\STATE
+\STATE $ x^+ \gets P_X \left(x^{(k)} - \alpha \nabla_x F\left(x^{(k)},\bar{y}^+\right)\right)$
+\STATE
+\STATE $A \gets \dfrac{||\nabla_x F\left(x^+,\bar{y}^+\right) - \nabla_x F\left(x^{(k)},\bar{y}^+\right)||_2}{||x^+-x^{(k)}||_2} $
+\STATE
+\STATE $B \gets \dfrac{||\nabla_y F\left(x^+,y^{(k)}\right) - \nabla_y F\left(x^{(k)},y^{(k)}\right)||_2}{||x^+-x^{(k)}||_2} $
+\STATE
+\STATE $C \gets \dfrac{||\nabla_y F\left(x^+,y^{(k)}\right) - \nabla_y F\left(x^+,\bar{y}^+\right)||_2}{||y^{(k)}-\bar{y}^+||_2}$
+\STATE
+\STATE $\bar{\alpha} \gets \left\{ \begin{array}{ll}
+\min \left\{\dfrac{\sqrt{A^2+2B^2(1-\epsilon)}-A}{2B^2}, \dfrac{1-\epsilon}{2C}\right\} & \mbox{ if }\; B>0, C>0 \\
+\\
+\min \left\{\dfrac{1-\epsilon}{2A},\dfrac{1-\epsilon}{2C}\right\} & \mbox{ if }\; A > 0 , C>0, B=0 \\
+\\
+\dfrac{\sqrt{A^2+2B^2(1-\epsilon)}-A}{2B^2} & \mbox{ if }\; B>0,C=0\\
+\\
+\dfrac{1-\epsilon}{2C} & \mbox{ if }\;A=0,C>0,B=0\\
+\\
+\dfrac{1-\epsilon}{2A} & \mbox{ if }\; A>0,C=0,B=0\\
+\\
+\alpha & \mbox{ otherwise}
+\end{array} \right. $
+\STATE
+\end{algorithmic}
+
+Step 3: Check convergence condition
+\begin{algorithmic}
+\IF{$\alpha \leq \bar{\alpha}$}
+\STATE $\alpha_k = \alpha$
+\STATE $\bar{y}^{(k)} = \bar{y}^+$
+\STATE $x^{(k+1)} = x^+$
+\ELSE
+\STATE $\alpha \gets \min\{\bar{\alpha},\theta \alpha\}$
+\STATE go to Step 2
+\ENDIF
+\end{algorithmic}
+
+Step 4:
+\begin{algorithmic}
+\STATE $y^{(k+1)} = P_Y \left(y^{(k)} + \alpha_k \nabla_y F\left(x^{(k+1)},y^{(k)}\right)\right)$
+\end{algorithmic}
+\end{algorithm}
+
+
+In particular, for $F(x,y)$ in \eqref{saddle}, we have that
+
+\begin{align*}
+A_k &= \dfrac{\left|\left|\dfrac{f}{x^{(k)}} - \dfrac{f}{x^{(k+1)}}\right|\right|_2}{||x^{(k+1)}-x^{(k)}||_2} \\
+\\
+B_k &= \dfrac{\left|\left|\beta Ax^{(k+1)} - \beta A x^{(k)}\right|\right|_2}{\left|\left|x^{(k+1)}-x^{(k)}\right|\right|_2} \\
+\\
+C_k &= 0
+\end{align*}
+
+

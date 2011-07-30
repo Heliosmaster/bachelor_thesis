@@ -1,0 +1,13 @@
+*.aux
+*.bak
+*.bbl
+*.blg
+*.log
+*.synctex
+*.toc
+*.sav
+*.bib
+doc_tesi/*
+src/*
+speech/*
+img/eps/*

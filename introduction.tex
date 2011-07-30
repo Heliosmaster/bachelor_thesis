@@ -1,0 +1,368 @@
+\chapter{Image restoration} \label{chap1}
+
+Image restoration is one of the most important topics in imaging science. To better understand that, this chapter will cover the principles behind image formation and errors that occur during this process.
+
+\section{The image acquisition}
+
+Images are acquired via an image system which consists in a optical part and a detector; they both have to be taken into account for an accurate modeling of the imaging process.
+
+\subsubsection{The optical system}
+
+The optical system can be summarized as a device which collects the light coming from an object to form a image in a plane, hence called the \emph{image plane}.
+
+Since most imaging systems are exactly, or at least approximately, isoplanatic, if the light emitted by the object is spatially incoherent, then the following integral describes the linear relationship between the intensity of the object $x(s)$ and that of the image obtained $\tilde{f}(s)$:
+
+\begin{align} \label{1.1}
+\tilde{f}(s) = \int H(s-s')\, x(s') \dx s'
+\end{align}
+
+$H$ is called the \emph{impulse response}.
+
+The expression can also be viewed as
+
+$$\tilde{f}(s) = (H*x)(s)$$
+
+where $*$ denotes the \emph{convolution} operator.
+
+In case of a point light source in $s_0$, usually expressed with a Dirac $\delta$ function centered in $s_0$, under the hypothesis that the overall energy is conserved, its integral is costant at 1.
+
+Thus, we have that $x(s) = \delta(s-s_0)$ and \eqref{1.1} can be rewritten as:
+
+$$\tilde{f}(s) = H(s-s_0)$$
+
+Then the impulse response coincides with the image obtained in case of point light sources. For this reason $H$ is also known as \emph{point spread function} (PSF). The PSF has also a practical meaning, since it represents the error due to the optical system known as \emph{blurring} (see Section \eqref{sec:blurring}).
+
+In general, we will suppose the PSF to satisfy:
+
+\begin{enumerate}
+\item $H(s) \geq 0$
+\item $\int H(s) \dx s = 1$
+\end{enumerate}
+
+\subsubsection{Detection}
+
+Along with the optical part, the image system is characterized by another fundamental device, the \textbf{detector}, which is located in the image plane and measures the incoming radiation, converting it to electrical signals.
+
+Some example of such detectors are the CCD (\emph{Charged Coupled Device}), often used in astronomy, APS (\emph{Active Pixel Sensor}), which is the most common sensor found in cell phone cameras and DSLRs cameras, and APD (\emph{Avalanche Photo-Diode}), one of the most important for fluorescence microscopy.
+
+The detection process introduces the concept of \textbf{sampling}, which is a process performed on a uniform grid in the image plane: since it is impossible to store continuous informations, the image is stored as an array of pixels or voxels (depending on the dimension of the problem), and for this reason the equation \eqref{1.1} must be somehow discretized; thanks to the mapping provided by geometric optics, the image can be subdivided into pixels (or voxels), so that the convolution equation \eqref{1.1} is replaced by the matrix equation
+
+\begin{align}
+\label{1.2} \tilde{f}=Hx
+\end{align}
+
+The discrete convolution can assume different forms, depending on the boundary values: if we assume to have 0 in the boundaries, then the matrix $H$ is a block-Toepliz with Toepliz blocks (BTTP) matrix\footnote{See Section \ref{app:matrices} for a brief overview of such particular matrix structures.}, besides, if we assume the boundaries to be periodic (i.e. the first line is replicated as the $(n+1)$-th line, and similarly for every border), the matrix is a block-circulant with circulant blocks (BCCB) matrix\footnotemark[\value{footnote}].
+
+The discrete PSF is  normalized to 1: $H^T e= e$, where $e$ denotes an array with all entries equal to 1.
+
+Constraints due to the physical properties of the object can be imposed: a natural constraint is $x_i \geq 0$, $\forall i$.
+
+Furthermore, every entry of $H$ is nonnegative and $He > 0$ (every row and every column of $H$ has at least a nonzero element).
+
+\section{Errors in the image formation}
+
+In the digital signal obtained by the image system, some errors can come at play; in general, the ones which are due to the radiation emitted by the object $x$ itself, the \emph{blurring} and \emph{noise}, are dominant.
+
+\subsection{Blurring} \label{sec:blurring}
+
+Blur is an error in the image which occurs during the acquisition, and, mathematically speaking, is connected to backward diffusion processes (such as the inversion of the heat equation), which are notoriously unstable.
+
+In general, blur, along with its origin, can be divided into three main categories, each one with its own PSF:
+
+\begin{itemize}
+\item \emph{optical blur}, also often called ``out-of-focus blur'', which is due to the deviation of the image plane from the focus of an optical lens;
+\item \emph{mechanical blur}, or ``motion blur'', which arises from the rapid mechanical motion of either the target object or image devices during the image acquisition process;
+\item \emph{medium-induced blur} which is due to the scattering or optical turbulence of the media through which light rays travel.
+\end{itemize}
+
+The last one affects heavily astronomy and microscopy: for example, spatiotemporal variation of the physical properties of the atmosphere (such as temperature and density) could result in a randomly fluctuating distributions of the index of refraction, causing ``optical turbulence''; meanwhile, in microscopy, problems lie in the inhomogeneities in the refractive index of the specimen considered, which lead to a similar effect.
+
+\subsection{Noise}
+
+Noise can be roughly described as an \emph{unwanted} component of the image which is intrinsic to any image system.
+
+There are several kind of noise: some occur naturally, some are induced by sensors, and others are a result from various processes like quantization, transmission of the informations and speckles in coherent light situations.
+
+If the noise is \emph{additive}, a generic model for such process is:
+
+$$f = \tilde{f} + n$$
+
+where $\tilde{f}$ denotes the ideal image as in \eqref{1.1}, $n$ is the noise, and $f$ the real, noise-affected, observation.
+
+The various noises generally considered are random in nature and therefore their exact values are random variables, which are best described using probabilistic notions.
+
+While there are several image noise models, two of them are the most common in literature: Gaussian and Poisson Noise.
+
+\subsubsection{Gaussian noise}
+
+Gaussian noise is probably the most frequently occurring noise and for this reason it has been extensively studied.
+
+Gaussian noise retains the properties of Gaussian distribution, and the Central Limit Theorem (CLT) is certainly one of the most important: it states that, given a large number of independent (or nearly so) variables, which are individually negligible compared to the sum, then the distribution of the sum of such variables has a Gaussian distribution. The theorem holds even if the individual random variables do not have a Gaussian distribution themselves or even the same distribution at all.
+
+For this property, Gaussian noise is widely used to model thermal noise, which is due to the thermal agitation of charge carriers, usally electrons, inside a conductor, since the vibration of each electron can be seen as a random variable that fulfills the hypotesis of the CLT.
+
+Gaussian noise, in addition, can be seen as the limit behavior of other noises with a different distribution, such as the \emph{photon noise} previously described.
+
+The density function of univariate Gaussian noise, with mean $\mu$ and variance $\sigma^2$ is
+
+$$p (x) = \frac{1}{\sqrt{2 \pi \sigma^2}}\, e^{-\frac{(x-\mu)^2}{2\sigma^2}}$$
+
+with $-\infty < x < \infty$.
+
+\subsubsection{Poisson noise}
+
+In all imaging processes where images are obtained by means of the count of particles (photons in general) arriving in the image domain, the noise (also known as \emph{photon noise} or \emph{shot noise}) can be modeled with a Poisson distribution, meaning that the probability of receiving $k$ particles in a given interval of time $T$ is given by:
+
+\begin{align}
+p(k) = \dfrac{ e^{-\lambda} \lambda^k }{k!} \qquad \qquad k = 0,1,2, ...
+\end{align}
+
+where $\lambda$, proportional to $T$, is the expected value of the occurrencies.
+
+If $N$ is the average number of photons collected, the \emph{signal-to-noise ratio} is $\sqrt{N}$; this explains why photon noise becomes more important when the number of photons collected is small, e.g. in low light conditions.
+
+This statistical model is appropriate to describe data acquired in fluorescence microscopy, emission tomography, optical/infrared astronomy, and so on; even if in all these fields the wavelength of the photons is different, the statistics of the data remains the same, while the image system varies. Namely, the $H$ matrix in the equation \eqref{1.2} is a sparse matrix in tomography, and a convolution matrix in microscopy and in astronomy.
+
+As a result of recent development and attention gained by medical application such as PET (\emph{Positron Emission Tomography}) and SPECT (\emph{Single Photon Emission Computerized Tomography}), major advances have been made and then transferred to other fields in which data are affected by Poisson noise.
+
+A minor contribution to the noise can come from a phenomenon known as \emph{background emission}: in astronomy, for example, this emission is due to the sky, while in fluorescence microscopy the auto-fluorescence of both the medium and the sample along with the reflections of the excitation light must be taken into account. This background emission is again a random variable with Poisson distribution and an estimate of its expected value $b_i$ can be obtained by a preprocessing of the detected image. There are some cases in which the background value can be even larger than the signal itself; these images are called \emph{background dominated} and are an important challenge in astronomy.
+
+In general, when the object and the background emission are statistically independent (or it can be reasonably assumed), their overall contribution is a Poisson random variable with the expected value $(Hx+b)_i$.
+
+\section{Image restoration as an ill-posed inverse problem}
+
+If we consider the problem of image restoration to be independent to sensor effects and without inherent noise, we have the equation \eqref{1.1}; in this case the problem is to determine the original object distribution $x$, given the recorded image $\tilde{f}$ and some knowledge about the PSF $H$.
+
+A common method to do so is to employ operathor theory: given spaces of functions in which $x$ and $\tilde{f}$ are defined, considering the operator $T$:
+
+$$T\{x\} \to \tilde{f}$$
+
+we have that
+
+$$T\{x\} = \int H(s-s')x(s') \dx s'$$
+
+The problem of image restoration is then to find the inverse transformation $T^{-1}$ such that
+
+$$T^{-1}\{\tilde{f}\} \to x$$
+
+For this reason, most of the problems found in image processing are \textbf{inverse problems}.
+
+A problem stands a ``good'' chance of solution by computation, using a stable algorithm, if it is \textbf{well posed} and \textbf{well-conditioned}.
+
+A problem is well-posed in the sense of Hadamard if:
+
+\begin{itemize}
+\item a solution exists
+\item the solution is unique
+\item the solution depends continuously on the data, in some reasonable topology
+\end{itemize}
+
+Problems for which $T^{-1}$ does not exist, are said to be \emph{singular}. Even if such inverse operator exists, is unique and depends continuously on the data, it may be \emph{ill-conditioned}, i.e. a trivial perturbation in $\tilde{f}$ may result in nontrivial perturbations in $x$.
+
+In particular, mathematically speaking, there exists an $\epsilon$, arbitrarily small, such that:
+
+$$T^{-1} \{\tilde{f}+\epsilon\} = x + \delta$$
+
+where $\delta \gg \epsilon$. If this is the case, $\delta$ is not arbitrarily small and therefore not negligible.
+
+Summarizing, an ill-posed problem is one in which the inverse transformation may not have a solution or inherent data perturbations, such as noise, may result in undesirable effects in the solution by inverse transformation (\emph{ill-conditioning}).
+
+The ill-posedness of image restoration can be proved by means of Riemann-Lebesgue lemma \citep{hunt}, which, applied to our case, states that:
+
+$$\lim_{\alpha \to \infty} \int H(s-s') \sin(\alpha s') \dx s' = 0$$
+
+Then
+
+\begin{align}
+\label{riem-leb}
+\lim_{\alpha \to \infty} \int H(s-s') [x(s') + \sin(\alpha s')] \dx s' = \int H(s-s') x(s') \dx s' = \tilde{y}
+\end{align}
+
+In other words, a sinusoid of infinite frequency can be added to the object distribution $x$ and the result is identical to the image distribution $\tilde{y}$.  Then the image restoration problem is an ill-posed problem.
+
+A direct implication of \eqref{riem-leb} is that we choose a small value $\epsilon_1$, there exist a value $A$ such that
+
+$$\int H(s-s') \sin(\alpha s') \dx s' < \epsilon_1 \qquad \forall \alpha \geq A$$
+
+Therefore
+
+$$ \int H(s-s')[x(s') + sin(\alpha s')] \dx s' = \tilde{y} + \epsilon\qquad \forall \alpha \geq A,\; |\epsilon| < \epsilon_1$$
+
+This shows that if an infinitesimally small value $\epsilon$ is chosen and added to the image distribution $\tilde{y}$, this cannot be separate, in the sense of image restoration, from an original object distribution that has an additional component of a sinusoid with frequency $\alpha$. Since $\epsilon$ can be arbitrarily small, a trivial perturbation cannot be distinguished from a finite, nontrivial perturbation in the original object distribution. Then, also the solution of the inverse transformation is ill-conditioned.
+
+\section{Regularization}
+
+As seen before, image restoration is an ill-posed problem and the key to a successful solution of this kind of problems lies in its regularization: assuming the image is affected by noise with a known statistical distribution, we will adopt the Bayesian framework proposed by Geman and Geman \citep{bayes}, which consist in the use of additional \emph{a priori} informations about both the clean signal $\tilde{y}$ and the noise, along with their statistical properties.
+
+Then the computation of the \emph{maximum a posteriori} estimate is reduced to the minimization of the negative-log of the posterior probability density.
+
+\subsection{Likelihood}
+
+Using the previous notation, let $f$ denote the detected signal (an array of integer nonnegative numbers, which represent the number of photons detected) with elements $f_i$ ($i \in S$, which will be implied from this moment on, can be either a single or multiple index, depending on the nature of the problem).
+
+In case of Gaussian noise, $f$ is the realization of a random variable $F$; its elements $F_i$ are Gaussian random variables with mean $(Hx+b)_i$ and variance $\sigma_i$.
+
+Assuming the random variables associated with each pixel are statistically independent, then the probability distribution of $F$, for given $H$, $x$ and $b$, is:
+
+\begin{align}
+\label{g_like}
+p_F(f;x) = \prod_{i \in S} \dfrac{1}{\sqrt{2\pi\sigma_i^2}} e^{-\frac{(f_i-(Hx+b)_i)^2}{2\sigma_i^2}}
+\end{align}
+
+In case of Poisson noise, on the other side, $f$ is the realization of a Poisson random variable $f$ (with elements $F_i$) with the expected value $Hx+b$. Assuming again that the random variables associated with each pixel are statistically independent, then the probability distribution of $F$, for given $H$, $x$ and $b$, is:
+
+\begin{align}
+\label{p_like}
+p_F(f;x) = \prod_{i \in S} \dfrac{e^{-(Hx+b)_i} (Hx+b)_i^{f_i}}{f_i!}
+\end{align}
+
+The \emph{maximum likelihood} (ML) approach consists substantially in the addition of a function of $x$, the \emph{likelihood}, defined by $L_f^F(x) = p_F(f;x)$, where $f$ is the given detected image. Then a ML estimate is any maximizer of such function.
+
+In case of Gaussian noise, if we take the negative logarithm, the equation \eqref{g_like} is reduced to:
+
+$$\phi_0(x) = \sum_{i \in S} \left\{ \log{\dfrac{1}{\sqrt{2\pi\sigma_i^2}}}+\dfrac{(f_i-(Hx+b)_i)^2}{2\sigma_i^2} \right\}$$
+
+Since $\log{\dfrac{1}{\sqrt{2\pi\sigma_i^2}}}$ is costant, the minimization of such equations is essentially the weighed least square approximation:
+
+\begin{align}
+\label{weigh_lsq}
+\min \dfrac{1}{2} \left| \left| \dfrac{f_i-(Hx+b)_i}{\sigma_i}\right| \right|_2^2
+\end{align}
+
+Considering Poisson noise, however, taking the negative logarithm and using the Stirling formula ($\log f_i! \simeq -f_i + f_i \log f_i$), the equation \eqref{p_like} is reduced to:
+
+\begin{align}
+\label{KL}
+\phi_0(x) = \sum_{i \in S} \left\{f_i \log{\frac{f_i}{(Hx+b)_i}}+(Hx+b)_i - f_i\right\}
+\end{align}
+
+where we assume $f_i \log f_i =0$ if $f_i =0$.
+
+This function is called the generalized  Kullback-Leibler (KL) divergence (also known as Csisz\`{a}r I divergence) of $x$ from $f$, and its minimization is reduced on the nonnegative orthant, since is well-known to be convex, nonnegative and coercive on the nonnegative orthant, so that minimizers exist and are global.
+
+If the equation $Hx+b = y$ has a nonnegative solution $x^*$, this is also a minimizer of the KL function, since we have
+
+$$\phi_0(x^*) = \sum_{i \in S} \left\{ f_i \log{\dfrac{f_i}{f_i}} + f_i - f_i \right\} = 0$$
+
+In general, because of the extreme ill-conditioning of $H$, a solution could be difficult to compute. Furthermore, $f$ is degraded by noise. Consequently, a minimizer of $\phi_0(x)$ may not provide a sensible solution of the image deblurring problem.
+
+For this reason it is necessary to ``regularize'' the maximum likelihood approach by a suitable \emph{prior}, which describes the known statistical properties of the unknown solution.
+
+\subsection{The Bayesian Approach}
+\label{bayesian_framework}
+
+In the Bayesian approach, the unkown object $x$ is also considered as a realization of a multi-valued random variable, and the \emph{a priori} information is encoded into the given probability distribution $p_X(x)$ of this random variable, the so-called \emph{prior}.
+
+If the probability distribution \eqref{p_like} is viewed as a conditional probability of $F$ for a given value of $x$, i.e. $p_F (f;x) = p_F (f|X=x)  =: p_F(f|x)$, then the Bayes formula (hence the name) states:
+
+$$p_X(x|f) = \dfrac{p_F(f|x)p_X(x)}{p_F(x)}$$
+
+If in this equation we insert the detected value of $f$, we obtain the \emph{posterior probability distribution} of $X$,
+
+$$P_f^X(x) = L_f^F(x)\dfrac{p_X(x)}{p_F(f)}$$
+
+As for the choice of the prior, in general it is assumed that $X$ is either a Gibbs random field or a Markov random field (MRF). Thanks to Hammersley-Clifford Theorem, however, any MRF is equivalent to a suitable Gibbs random field, so we will focus on that.
+
+The Gibbs random field is a random variable with a probability distribution given by
+
+$$p_X(x) = \dfrac{1}{Z} e^{-\beta \phi_1(x)}$$
+
+where $\phi_1(x)$ is a given function, usually called energy function or \textbf{penalty function}, and $Z$ is a normalization constant.
+
+By definition, the \emph{maximum a posteriori} (MAP) estimate is any maximizer of the posterior probability distribution; if we take again the negative logarithm of this function, we can see that a MAP estimate is any $x_\beta^*$ which minimizes
+
+\begin{align}
+\label{map}
+\phi(x) = \phi_0 (x)+ \beta \phi_1 (x)
+\end{align}
+
+where $\beta$ is the so-called \emph{regularization parameter}.
+
+Functions of the form of \eqref{map} have been used in several applications, with different form of the penalizing function $\phi_1(x)$.
+
+\begin{align}
+\label{defTV}
+\begin{aligned}
+&\mbox{Quadratic Penalization} && \phi_1(x) = \dfrac{||x||_2^2}{2} \\
+&\mbox{Quadratic Laplacian} && \phi_1(x) = \dfrac{||\Delta x||_2^2}{2} \\
+&\mbox{Total Variation (TV)} && \phi_1(x) = \sum_{i \in S} ||(\nabla x)_i||_2
+\end{aligned}
+\end{align}
+
+where $(\nabla x)_i$ is the discrete approximation of the gradient at $x_i$.
+
+Different criteria have been proposed for the choice of the regularization parameter $\beta$: in case of Gaussian noise, to solve the weighed least squares problem \eqref{weigh_lsq}, a good principle is the so-called \emph{Mozorov discrepancy principle}\citep{mozorov}. Considering Poisson noise, however, a possible way, proposed in \citep{discr_princ}, is to find the value of $\beta$ such that
+
+\begin{align}
+\label{discr}
+D_{KL} (Hx_\beta^*+b,f) = \dfrac{n}{2}
+\end{align}
+
+where $D_{KL}$ is the same as \eqref{KL}, and $n$ is the cardinality of $S$.
+
+\section{Formulation of the problem}
+
+In this work, we will focus on the image denoising from data corrupted by Poisson noise; the PSF is then the identity matrix ($H=I$) and, if we suppose that there is no \emph{background emission}, the KL divergence \eqref{KL} can be rewritten as:
+
+$$\phi_0(x) = \sum_{i \in S} \left\{f_i \log{\dfrac{f_i}{x_i}} + x_i - f_i \right\}$$
+
+A minimizer $x^*$ for such functional is $x^* = f$, which means that the solution is the detected image itself. Since we know that $f$ is a noisy image, $f$ cannot be a feasible solution for our problem; we overcome this with a penalty function $\phi_1(x)$ (see \eqref{map}).
+
+The domain of the resulting functional $\phi(x) = \phi_0(x)  + \beta \phi_1(x) $ is
+
+\begin{align}
+\label{domain}
+X = \left\{ \begin{array}{ll}
+x \geq \eta > 0&f_i > 0 \\
+x \geq 0&f_i=0
+\end{array}\right.
+\end{align}
+
+where
+
+$$\eta = \min \{ f_i | f_i > 0 \} $$
+
+Such function $\phi(x)$ is convex and coercive and thus the solution of the problem
+
+\begin{align}
+\label{ROF}
+\min_{x \in X} \phi(x)
+\end{align}
+
+is unique\footnote{See Section \ref{app:convex} for a brief overview on the properties of convex functionals.}.
+
+The gradient and Hessian of the $\phi_0$ are given by:
+
+\begin{align*}
+\nabla \phi_0 (x) &= 1 - \dfrac{f}{x} \\
+\nabla^2 \phi_0 (x) &= diag\left(\dfrac{f}{x^2}\right)
+\end{align*}
+
+where the quotient is defined in the Hadamard sense, i.e. pixel by pixel (or voxel by voxel).
+
+We will consider $\phi_1(x)$ as the TV functional as in \eqref{defTV}. It is important to note that such function is not always differentiable. Such TV functional was has been introduced in \citep{rof}. The function \eqref{ROF}, with $\phi_0(x) = \dfrac{1}{2}||x-y||_2^2$ is also known as ROF model.
+
+In the following chapters, for the TV functional we will use expression
+
+\begin{align}
+\phi_1(x) = \sum_{i=1}^n ||A_i x||_2
+\end{align}
+
+where $n = s \times t$ is the number of pixels of the image, and $A_i$ (for $i=1,...,n$) is a $2 \times n$ matrix with null entries except for
+
+\begin{align*}
+a_{1,i} = -1 && a_{1,i+1} = 1 \\
+a_{2,i} = -1 && a_{1,i+t+1} = 1
+\end{align*}
+
+where the pixels in the image are ordered column-wise.
+
+In addition, for further reference, we consider the matrix $A$ as the $2n \times n$ matrix defined by
+
+\begin{align} \label{matrixA}
+A = \begin{pmatrix}
+A_1 \\
+\vdots \\
+A_n
+\end{pmatrix}
+\end{align} 

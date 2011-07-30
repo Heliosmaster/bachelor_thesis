@@ -1,0 +1,659 @@
+\chapter{Bregman Iterations and Split Bregman methods}
+
+\section{Bregman Iterations}
+
+In this section, we will introduce the Bregman Iteration and show that it can be used to solve a wide variety of constrained optimization problems.
+
+Then we will introduce the ``Split Bregman methods", which we will apply to TV functional for image denoising.
+
+\subsection{Subgradient and subdifferential}
+
+\begin{defi}
+Let $E: U \to \R$ be a real-valued function (not necessarily convex) defined on a convex open set in the Euclidean space $\R^n$: a vector $v$ in that space is called a \textbf{subgradient} \citep{rockafellar} at a point $x_0 \in U$ if for any $x \in U$ one has:
+
+$$E(x) - E(x_0) \geq v^T(x-x_0)$$
+
+\end{defi}
+
+The set of all subgradients at $x_0$ is called the \textbf{subdifferential} at $x_0$ and is denoted $\de E(x_0)$. The subdifferential is always a convex closed set and if $f$ is convex and finite near $x_0$, it is nonempty.
+
+The subgradient gives an affine global underestimator of $E(x)$. If $E(x)$ is convex, it has at least one subgradient at every internal point of the domain. Furthermore, if $E(x)$ is convex and differentiable, the gradient vector $\nabla E(x_0)$ is a subgradient of $E(x)$ at $x_0$.
+
+\begin{theorem}
+Let $E: U \to \R$ be a convex function, $U \subset R^n$.
+
+$x_0 \in U $ is a global minimum $ \iff 0 \in \de E(x_0)$
+\end{theorem}
+\begin{proof}
+
+\begin{align*}
+x_0 \mbox{ is a global minimum } &\iff E(x) \geq E(x_0) \qquad \forall x \in U \\
+&\iff E(x)-E(x_0) \geq 0 \\
+&\iff E(x)-E(x_0) \geq 0^T (x-x_0) \\
+&\iff 0 \in \de E(x_0)
+\end{align*}
+\end{proof}
+
+\subsection{Bregman distance}
+
+\begin{defi}
+The Bregman distance \citep{reg_tv} associated with a convex function $E$ at the point $v$ is
+
+\begin{align}
+D^p_E (u,v) = E(u) - E(v) - p^T(u-v)
+\end{align}
+
+where $p$ is the subgradient of $E$ at $v$.
+\end{defi}
+
+If $E(u)$ is strictly convex, $D^p_E(u,v)$ is also strictly convex in $u$ for each $v$, and as a consequence $D^p_E(u,v)=0$ if and only if $u=v$.
+
+However, even for a continuously differentiable and strictly convex function, the Bregman distance is not a distance in the usual sense, since in general $D^p_E(u,v) \neq D^p_E(v,u)$, and the triangle inequality does not hold.
+
+It is, however, a measure of closeness in the sense that $D^p_E(u,v) \geq 0$, and $D^p_E(u,v) \geq D^p_E(w,v)$ for $w$ on the line segment between $u$ and $v$.
+
+\section{Bregman iteration for unconstrained minimization problem}
+
+Let us consider two non-negative energy functionals, $E$ and $H$. We assume that $H$ is differentiable and such that
+
+$$\min_{x \in \R^n} H(x) = 0$$
+
+and $E$ is not everywhere differentiable.
+
+We consider the following problem:
+
+\begin{align} \label{minimized_problem}
+\min_x \left\{ E(x) + \lambda H(x) \right\}
+\end{align}
+
+where $\lambda$ is a positive number.
+
+We can modify this problem, iteratively solving:
+
+\begin{align} \label{breg_iter}
+\begin{aligned}
+ x^{(k+1)} &= \argmin_x \left\{ D^p_E \left(x,x^{(k)}\right) + \lambda H(x) \right\} \\
+ &= \argmin_x \left\{ E(x) - {p^{(k)}}^T \left(x-x^{(k)}\right) + \lambda H(x) \right\}
+ \end{aligned}
+ \end{align}
+
+We have $0 \in \de\left(\left(D^p_E\left(x,x^{(k)}\right)+\lambda H)(x^{(k+1)}\right)\right)$; if $p^{(k+1)} \in \de E\left(x^{(k+1)}\right)$, we have that
+
+\begin{align}
+ p^{(k+1)} = p^{(k)} - \lambda \nabla H \left(x^{(k+1)}\right)
+ \end{align}
+
+To simplify, if we denote $q^{(k+1)} = \lambda \nabla H\left(x^{(k+1)}\right)$, we have $p^{(k+1)} + q^{(k+1)} = p^{(k)}$.
+
+Then, if we put $p^{(0)} = 0$, we have:
+
+\begin{align} \label{pk}
+\begin{aligned}
+p^{(1)} &= p^{(0)} - q^{(1)} = -q^{(1)} \\
+p^{(2)} &= p^{(1)} - q^{(2)} = -q^{(1)} -q^{(2)} \\
+&\vdots \\
+p^{(k+1)} &= - \sum_{j=1}^{k+1} q^{(j)}
+\end{aligned}
+\end{align}
+
+In \citep{reg_tv} the authors analyze the convergence of this Bregman iterative scheme, and it is shown that under fairly weak assumption on $E$ e $H$, we have that
+
+\begin{align} \label{breg_cvg}
+\lim_{k \to \infty} H\left(x^{(k)}\right) = 0
+\end{align}
+
+\begin{theorem}
+Assume that $E$ and $H$ are convex functionals, and that $H$ is differentiable. We also assume that solutions to the sub-problems in \eqref{breg_iter} exist. We then have:
+
+\begin{enumerate}
+\item $H\left(x^{(k+1)}\right) \leq H\left(x^{(k)}\right)$ for every $k$.
+\item if $x^*$ is a minimizer of $H(x)$ such that $E(x^*)<\infty$, then
+$$H\left(x^{(k)}\right) \leq H(x^*) + \dfrac{E(x^*)}{\lambda k}$$
+
+and in particular $\{ x^{(k)} \}$ is a minimizing sequence.
+
+This sequence has converging subsequences to a minimizer $x^*$ of $H(x)$. If such minimizer is unique, $x^{(k)} \to x^*$ as $k \to \infty$.
+\end{enumerate}
+ \end{theorem}
+ \begin{proof}
+ See \citep{reg_tv}, Proposition 3.2 and Theorem 3.3.
+ \end{proof}
+
+Note that $x^*$ is not a solution of problem \eqref{minimized_problem}.
+
+\section{Bregman iteration for constrained minimization problem} \label{sec:unconstrained}
+
+We assume that we have to solve the following problem
+
+\begin{align} \label{minimized_2}
+\min_x E(x) \qquad \qquad \mbox{such that} \qquad Ax=b
+\end{align}
+
+We put $H(x) = Ax-b$, for some linear operator $A$ and vector $b$. We want to apply the formula \eqref{minimized_problem}, so we make this into an uncostrained problem, using a quadratic penalty function, thus having
+
+\begin{align}
+\min_x \left\{ E(x) + \dfrac{\lambda}{2} ||Ax-b||^2_2 \right\}
+\end{align}
+
+The Bregman iteration for this problem is
+
+\begin{align}
+&\begin{aligned} \label{breg_iter2}
+x^{(k+1)} &= \argmin_x \left\{ D^p_E \left(x,x^{(k)}\right) + \dfrac{\lambda}{2} ||Ax-b||^2_2 \right\} \\
+ &= \argmin_x \left\{ E(x) - {p^{(k)}}^T\left(x-x^{(k)}\right) + \dfrac{\lambda}{2} ||Ax-b||^2_2 \right\}
+\end{aligned}  \\
+\notag \\
+&p^{(k+1)} = p^{(k)} - \lambda A^T (Ax^{(k+1)} - b)
+\end{align}
+
+In this case, since $H(x) = Ax-b$, $H$ is linear with respect to $x$, and we have
+
+\begin{align}
+q^{(k)} = \lambda \nabla H\left(x^{(k)}\right) = \lambda A^T \left(Ax^{(k)}-b\right) \label{qk}
+\end{align}
+
+From \eqref{pk} and \eqref{qk},  we have $p^{(k+1)} \in \mbox{ range}(A^T)$.
+
+If $p^{(0)}=0, x^{(0)}=0$ and we put $p^{(k)} = \lambda A^T \left(b^{(k)}-b\right)$, with $b^{(0)} = b$, we have
+
+\begin{align*}
+p^{(k+1)} &=  p^{(k)} - \lambda A^T(Ax^{(k+1)}-b) \\
+\\
+\lambda A^T (b^{(k+1)}-b) &= \lambda A^T \left(b^{(k)}-b\right) -\lambda A^T (Ax^{(k+1)} - b) \\
+\\
+\lambda A^T b^{(k+1)} - \lambda A^T b &= \lambda A^T b^{(k)} - \lambda A^T b - \lambda A^T A x^{(k+1)} + \lambda A^T b \\
+\\
+\lambda A^T b^{(k+1)} &= \lambda A^T b^{(k)} - \lambda A^T A x^{(k+1)} + \lambda A^T b \\
+\\
+\lambda A^T b^{(k+1)} &= \lambda A^T \left(b^{(k)} - Ax^{(k+1)} + b\right)
+\end{align*}
+
+Then
+
+\begin{align} \label{alg1-2}
+b^{(k+1)} = b^{(k)} + b - Ax^{(k+1)}
+\end{align}
+
+In \eqref{breg_iter2} we have:
+
+\begin{align*}
+-{p^{(k)}}^T \left(x-x^{(k)}\right) + \dfrac{\lambda}{2} ||Ax-b||_2^2 &= {p^{(k)}}^T \left(x^{(k)}-x\right) + \dfrac{\lambda}{2} ||Ax-b||_2^2 \\
+ &= \lambda \left(b^{(k)}-b\right)^T \left(Ax^{(k)}-Ax\right) +  \dfrac{\lambda}{2} ||Ax-b||_2^2
+\end{align*}
+
+Moving on to the gradient we have:
+
+\begin{align*}
+\nabla \left(\lambda \left(b^{(k)}-b\right)^T \left(Ax^{(k)}-Ax\right) +  \dfrac{\lambda}{2} ||Ax-b||_2^2 \right) &= -\lambda A^T \left(b^{(k)}-b\right) + 2 \dfrac{\lambda}{2} A^T (Ax-b) \\
+ &= \lambda A^T \left(b-b^{(k)}\right) +  \lambda A^T (Ax-b) \\
+ &= \lambda A^T \left(Ax-b+b-b^{(k)}\right) \\
+ &= \lambda A^T \left(Ax-b^{(k)}\right) \\
+ &= \nabla \left(\dfrac{\lambda}{2} \left|\left|Ax-b^{(k)}\right|\right|_2^2 \right)
+\end{align*}
+
+Then the Bregman iteration can be written as
+
+\begin{align}
+\begin{aligned}
+x^{(k+1)} &= \argmin_x \left\{ E(x) + \dfrac{\lambda}{2} \left|\left|Ax-b^{(k)}\right|\right|_2^2 \label{alg1-1} \right\} \\
+\\
+b^{(k+1)} &= b^{(k)} + b - Ax^{(k+1)}
+\end{aligned}
+\end{align}
+
+Since $H(x) = Ax-b$, we have that \eqref{breg_cvg}  is now
+
+\begin{align}\label{breg_cvg2}
+\lim_{k \to \infty} Ax^{(k)} = b
+\end{align}
+
+where the convergence is in the 2-norm sense.
+
+\begin{theorem} \label{th:1.2}
+Let $E:\R^n \to \R$ be convex; let $A: \R^n \to \R^m$ be linear. Consider the algorithm \eqref{alg1-1} and suppose that some iterate $x^*$ satisfies $Ax^* = b$.
+
+Then $x^*$ is a solution to the original constrained problem \eqref{minimized_2}.
+\end{theorem}
+\begin{proof}
+Let $x^*$ and $b$ be such that $Ax^* = b$ and
+
+\begin{align}
+x^* = \argmin_x \left\{ E(x) + \dfrac{\lambda}{2}||Ax-b||_2^2 \right\} \label{theo1.2-1}
+\end{align}
+
+Let $\hat{x}$ be a true solution to \eqref{minimized_2}. Then $Ax^* = b = A\hat{x}$, which implies that
+
+\begin{align}
+||Ax^* - b ||_2^2 = ||A\hat{x}-b^*||_2^2 \label{theo1.2-2}
+\end{align}
+
+Because $x^*$ satisfies \eqref{theo1.2-1}, we have
+
+\begin{align}
+E(x^*) + \dfrac{\lambda}{2}||Ax^*-b||_2^2 \leq E(\hat{x}) + \dfrac{\lambda}{2}||A\hat{x}-b||_2^2 \label{theo1.2-3}
+\end{align}
+
+Finally, note that \eqref{theo1.2-2}-\eqref{theo1.2-3}) together imply:
+
+$$E(x^*) \leq E(\hat{x})$$
+
+Because $\hat{x}$ satisfies the original optimization problem, this inequality can be sharpened to an equality, showing that $x^*$ solves \eqref{minimized_2}.
+\end{proof}
+
+This theorem shows that, provided that the algorithm converges in the sense of \eqref{breg_cvg2}, the iterates $x^{(k)}$ will get arbitrarily close to a solution of the original constrained problem. Furthermore, the proof does not use the linearity of $A$.
+
+There are some advantages with these Bregman iteration techniques over traditional penalty functions: first of all, Bregman iterations converge quickly when applied to certain types of functions, especially for problems where $E$ contains an L1- regularization term. The second advantage is that the value of $\lambda$ in \eqref{minimized_problem} is constant, and thus we can choose a good value for it, which minimizes the condition number of the sub-problems, also avoiding numerical instabilities that occur as $\lambda \to \infty$, that arise when using penalty methods.
+
+\section{Split Bregman methods}
+
+We will now solve
+
+\begin{align} \label{prob:split}
+\min_x \left\{|\Phi(x)|+H(x)\right\}
+\end{align}
+
+where $H$ and $|\Phi|$ are convex functionals, and $\Phi$ is differentiable. The key to our methods is to decouple the L1 and L2 portion of the energy in \eqref{prob:split}. We then consider the problem
+
+\begin{align} \label{prob:split2}
+\min_{x,d} \left\{ |d| + H(x) \right\} \qquad \qquad \mbox{ such that} \qquad d=\Phi(x)
+\end{align}
+
+which is clearly equivalent to the previous one. Then, we proceed to convert \eqref{prob:split2} to an unconstrained problem
+
+\begin{align}
+\min_{x,d} \left\{ |d| + H(x) + \dfrac{\lambda}{2} ||d-\Phi(x)||_2^2 \right\}
+\end{align}
+
+If we put $E(x,d) = |d| + H(x)$ and we define $A(x,d) = d-\Phi(x)$ we can see that  we have to solve the same problem as in Section \ref{sec:unconstrained}.
+
+Then, the Bregman iteration is:
+
+\begin{align} \label{breg_iter_split}
+\begin{aligned}
+\left(x^{(k+1)},d^{(k+1)} \right) &= \argmin_{x,d} \left\{ D^p_E \left(x,x^{(k)},d,d^{(k)}\right) + \dfrac{\lambda}{2} ||d-\Phi(x)||_2^2 \right\} \\
+\\
+&= \argmin_{x,d} \left\{ E(x,d) - {p_x^{(k)}}^T\left(x-x^{(k)}\right) + \right. \\
+&\left. \qquad + {p_d^{(k)}}^T\left(x-x^{(k)}\right)  + \dfrac{\lambda}{2}||d-\Phi(x)||_2^2 \right\} \\
+\\
+p_x^{(k+1)} &= p_x^{(k)} - \lambda {\left(\nabla \Phi\left(x^{(k+1)}\right)\right)}^T\left(\Phi\left(x^{(k+1)}\right)-d^{(k+1)}\right) \\
+\\
+p_d^{(k+1)} &= p_d^{(k)} - \lambda \left(d^{(k+1)} - \Phi\left(x^{(k+1)}\right)\right)
+\end{aligned}
+ \end{align}
+
+ After having applied the simplification \eqref{alg1-1}, we have the Bregman iteration:
+
+ \begin{align}
+  \label{alg2-1} \left(x^{(k+1)},d^{(k+1)}\right) &= \argmin_{x,d} \left\{ |d| + H(x) + \dfrac{\lambda}{2} \left|\left|d-\Phi(x)-b^{(k)}\right|\right|_2^2 \right\} \\
+  \label{alg2-2} b^{(k+1)} &= b^{(k)} + \left(\Phi\left(x^{(k+1)}\right) - d^{(k+1)}\right)
+ \end{align}
+
+In this case we put
+\begin{align*}
+p_x^{(k+1)} &= \lambda \nabla \Phi\left(x^{(k+1)}\right)^T b^{(k+1)} \\
+p_d^{(k+1)} &= \lambda b^{(k+1)}
+\end{align*}
+
+In order to implement this algorithm, we must be able to solve the problem \eqref{alg2-1}; having split the L1 and L2 components of this functional, we can perform this minimization efficiently, by iteratively minimizing with respect to $x$ and $d$ separately:
+
+\begin{align}
+\mbox{Step 1: }\qquad x^{(k+1)} &= \argmin_x \left\{H(x) + \dfrac{\lambda}{2} \left|\left|d^{(k)}-\Phi(x) - b^{(k)}\right|\right|_2^2 \right\} \label{split-1} \\
+\mbox{Step 2: }\qquad  d^{(k+1)} &= \argmin_d \left\{|d| +  \dfrac{\lambda}{2} \left|\left| d - \Phi\left(x^{(k+1)}\right) - b^{(k)}\right|\right|_2^2 \right\} \label{split-2}
+\end{align}
+
+The scheme (\ref{split-1}-\ref{split-2}-\ref{alg2-2}) is known as \textbf{Split Bregman iteration} \citep{breg_l1}.
+
+Having decoupled $x$ from the L1 portion of the problem, Step 1 is now differentiable. We can proceed by explicitly computing the optimal value of $d$ using the shrinkage operator:
+
+\begin{align*}
+d_j^{(k+1)} = shrink\left(\Phi(x)_j + b_j^{(k)}, \dfrac{1}{\lambda}\right)
+\end{align*}
+
+where the following operator solves $\argmin_d \left\{|d| + \dfrac{1}{2\gamma}||d-z||^2\right\}$
+
+$$d =  shrink(x,\gamma) = \dfrac{z}{|z|} max(|z|-\gamma,0) $$
+
+\subsection{Implementation of the Split Bregman iteration}
+
+\begin{algorithm}[H]
+\caption{Split Bregman iteration}
+\begin{algorithmic}
+\WHILE{$\left|\left|x^{(k)}-x^{(k+1)}\right|\right|_2 > tol$}
+\STATE
+\STATE $x^{(k+1)} = \argmin_x \left\{ H(x) + \frac{\lambda}{2} \left|\left|d^{(k)}-\Phi(x) - b^{(k)} \right|\right|_2^2 \right\}$
+\STATE
+\STATE $d^{(k+1)} = \argmin_d \left\{ |d| + \frac{\lambda}{2}\left|\left|d-\Phi\left(x^{(k+1)}\right)-b^{(k)}\right|\right|_2^2 \right\}$
+\STATE
+\STATE $b^{(k+1)} = b^{(k)}+\left(\Phi\left(x^{(k+1)}\right)-d^{(k+1)}\right)$
+\STATE
+\ENDWHILE
+\end{algorithmic}
+\end{algorithm}
+
+Examining the Theorem \ref{th:1.2}, it is easy to observe that any fixed point of the split Bregman algorithm is a minimizer of the original problem \eqref{prob:split2}, even if the subproblem  \eqref{split-1} is inexactly solved.
+
+Let $(x^*,d^*,b^*)$ be a fixed point of (\ref{alg2-1}-\ref{alg2-2}). The fixed point satisfies $b^* = b^* + \Phi(x^*) - d^*$, which implies that $d^* = \Phi (x^*)$. This result, combined with \eqref{alg2-1}, satisfies the condition of theorem \ref{th:1.2}, showing that $(x^*,d^*)$ is a solution of the constrained problem \eqref{prob:split2}.
+
+In \citep{deblurring} and \citep{operator} the Bregman iteration is traced back to the \emph{augmented Lagrangian algorithm} discussed by Hestenes in \citep{hestenes}, and Powell in \citep{powell}, with the only difference that in the Bregman iteration the sequence $\{b^{(k)}\}$ is scaled by a factor $\lambda$. The convergence properties of the augmented Lagriangan algorithm are well known in literature, then the convergence of the Bregman iteration can be derived also from that of the augmented Lagrangian algorithm, see \citep{bertsekas}.
+
+In \citep{deblurring} and \citep{operator} it is furthermore observed that the idea to minimize alternatingly with respect to the variables was presented also for the augmented Lagrangian methods in \citep{gabaymercier} \citep{glowinski}.
+
+The resulting algorithm is called the \emph{alternating direction method of multipliers} \citep{gabay}, which is equivalent to the alternating split Bregman algorithm.
+
+If we consider a dual formulation of the problem \eqref{prob:split}, it is possible to observe that the Bregman iteration is equivalent to the \emph{proximal point algorithm} of Rockafellar applied to the dual problem. Furthermore, the split Bregman methods coincides with the \emph{Douglas Rachford splitting method} applied to the dual problem, see \citep{Eckstein}.
+
+Then the convergence properties of the Bregman iteration and of the split Bregman method can be deduced from that of the proximal point algorithm and of the Douglas Rachford splitting method respectively.
+
+\section{TV denoising with split Bregman iteration}
+
+TV denoising is considered to be one of the best denoising models for both Gaussian and Poisson noise, but also one of the hardest to compute.
+
+In this section, we will show how the Split Bregman thechnique can be used to solve this kind of problems in a simple and extremely efficient way.
+
+\subsection{Gaussian noise}
+\subsubsection{Anisotropic model}
+
+We begin by addressing this anisotropic problem:
+
+\begin{align}
+\label{an:prob} \min_x \left\{ |D_i x| + |D_j x| + \dfrac{\mu}{2} ||x-f||_2^2\right\}
+\end{align}
+
+where:
+
+\begin{align*}
+&D_i x\;\mbox{ is the column vector of the forward difference }\;x_{i+1,j}-x_{i,j}\\
+&D_j x \;\mbox{ is the column vector of the forward difference }\;x_{i,j+1}-x_{i,j}
+\end{align*}
+
+With the notations of Chapter \ref{chap1}, $D_i$ and $D_j$ are matrices such that
+
+$$PA = \begin{pmatrix} D_i \\
+D_j \end{pmatrix}
+$$
+
+where $P$ is a $2n \times 2n$ permutation matrix that reorders the rows of $A$ \eqref{matrixA} by considering the odd rows first, and then the even rows.
+
+
+To apply Bregman splitting, we first replace $D_i x$ by $d_i$ e $D_j x$ by $d_j$. Thus we have the constrained problem
+
+\begin{align*}
+\min_{x,d_i,d_j} \left\{ |d_i| + |d_j| + \dfrac{\mu}{2} ||x-f||_2^2\right\} \qquad \mbox{ such that } \; \; d_i = D_i x \; \; \mbox{ and } \; \; d_j = D_j x
+\end{align*}
+
+To weakly enforce the constraints, we add penalty function terms:
+
+\begin{align*}
+\min_{x,d_i,d_j} \left\{ |d_i| + |d_j| + \dfrac{\mu}{2} ||x-f||_2^2 + \dfrac{\lambda}{2} ||d_i - D_i x||_2^2 + \dfrac{\lambda}{2} ||d_j - D_j x||_2^2 \right\}
+\end{align*}
+
+Finally, we strictly enforce the constraints by applying the Bregman iteration \eqref{alg2-1}:
+
+\begin{align*}
+\min_{x,d_i,d_j} \left\{ |d_i| + |d_j| + \dfrac{\mu}{2} ||x-f||_2^2 + \dfrac{\lambda}{2} \left|\left|d_i - D_i x -b_i^{(k)}\right|\right|_2^2 + \dfrac{\lambda}{2} ||d_j - D_j x-b_j^{(k)}||_2^2 \right\}
+\end{align*}
+
+where the proper values of $b_i^{(k)}$ and $b_j^{(k)}$ are chosen through Bregman Iteration.
+
+The resulting scheme is the following \citep{breg_l1}:
+
+\begin{align*}
+x^{(k+1)} &= \argmin_x \left\{ \dfrac{\mu}{2} ||x-f||_2^2|| + \dfrac{\lambda}{2} \left|\left|d_i^{(k)} - D_i x - b_i^{(k)}\right|\right|_2^2 + \dfrac{\lambda}{2} \left|\left|d_j^{(k)} - D_j x -b_j^{(k)}\right|\right|_2^2 \right\} \\
+\\
+d_i^{(k+1)} &= \argmin_{d_i} \left\{ |d_i| + \dfrac{\lambda}{2} \left|\left|d_i - D_i x^{(k+1)}-b_i^{(k)}\right|\right|_2^2 \right\} \\
+\\
+d_j^{(k+1)} &= \argmin_{d_j} \left\{ |d_j| + \dfrac{\lambda}{2} \left|\left|d_j - D_j x^{(k+1)}-b_j^{(k)}\right|\right|_2^2 \right\} \\
+\\
+b_i^{(k+1)} &= b_i^{(k)} + \left(D_i x^{(k+1)} - d_i^{(k+1)} \right) \\
+\\
+b_j^{(k+1)} &= b_j^{(k)} + \left(D_j x^{(k+1)} - d_j^{(k+1)} \right)
+\end{align*}
+
+The first subproblem has the following optimality condition:
+
+\begin{align}
+(\mu I - \lambda \Delta) x^{(k+1)} = \mu f + \lambda D_i^T \left(d_i^{(k)}-b_i^{(k)}\right) + \lambda D_i^T \left(d_j^{(k)}-b_j^{(k)}\right)
+\end{align}
+
+where $\Delta = - D_i^T D_i - D_j^T D_j$.
+
+In order to achieve optimal efficiency, we wish to use a fast iterative algorithm to get approximate solutions to this system. Because the system is strictly diagonally dominant, the most natural choice is the Gauss-Seidel method, which, in this case, can be written component-wise as $x_{r,s}^{(k+1)} = G_{r,s}^{(k)}$, where
+
+\begin{align*}
+G_{r,s}^{(k)} &= \dfrac{\lambda}{\mu + 4 \lambda} \left(x_{r+1,s}+x_{r-1,s}+x_{r,s+1}+x_{r,s-1}+d_{i,r-1,s}-d_{i,r,s} + d_{j,r,s-1}^{(k)}\right.+ \\
+&- \left.\,d_{j,r,s}^{(k)} - b_{i,r-1,s}^{(k)} + b_{i,r,s}^{(k)} - b_{j,r,s-1}^{(k)} + b_{j,r,s}^{(k)} \right) + \dfrac{\mu}{\mu + 4 \lambda}f_{r,s}
+\end{align*}
+
+In this case the value of $x_{.,.}$ are at the step $k$ or $k+1$ according to the order of solution.
+
+Then, using this solver, we have the following algorithm:
+
+\begin{algorithm}[H]
+\caption{Split Bregman method for Anisotropic TV}
+\begin{algorithmic}
+\STATE $u^{(0)} = f$
+\STATE
+\STATE $d_i^{(0)} = d_j^{(0)} = b_i^{(0)} = b_j^{(0)}=0$
+\STATE
+\WHILE{ $\left|\left|x^{(k)}-x^{(k-1)}\right|\right|_2 > tol$}
+\STATE
+\STATE $x^{(k+1)} = G^{(k)}$
+\STATE
+\STATE $d_i^{(k+1)} = shrink \left(D_i x^{(k+1)} + b_i^{(k)},\dfrac{1}{\lambda}\right)$
+\STATE
+\STATE $d_j^{(k+1)} = shrink \left(D_j x^{(k+1)} + b_j^{(k)},\dfrac{1}{\lambda}\right)$
+\STATE
+\STATE $b_i^{(k+1)} = b_i^{(k)} + \left(D_i x^{(k+1)} - d_i^{(k+1)}\right)$
+\STATE
+\STATE $b_j^{(k+1)} = b_j^{(k)} + \left(D_j x^{(k+1)} - d_j^{(k+1)}\right)$
+\ENDWHILE
+\end{algorithmic}
+\end{algorithm}
+
+The split Bregman method has the advantage that before the convergence is reached, the intermediate images are smooth; most of the image noise is eliminated during the first 10 iterations.
+
+\subsubsection{Isotropic model}
+
+The split Bregman technique can be used also with the isotropic TV model with Gaussian noise: in this case we wish to solve
+
+$$\min_x \left\{ \sum_r \sqrt{(D_i x)_r^2+(D_j x)_r^2} + \dfrac{\mu}{2}||x-f||_2^2 \right\}$$
+
+Like we did before, we split the L1 and L2 components by setting $D_i x = d_i$ and $D_j x = d_j$.
+
+The split Bregman formulation then becomes:
+
+$$\min_{x,d_i,d_j} \left\{ ||(d_i,d_j)||_2 + \dfrac{\mu}{2} ||x-f||_2^2 \right\} \qquad \mbox{ such that } \; \; d_i = D_i x \; \; \mbox{ and } \; \; d_j = D_j x$$
+
+where
+
+$$||(d_i,d_j)||_2 = \sum_{r,s} \sqrt{d_{i,r,s}^2 + d_{j,r,s}^2}$$
+
+Note that the $d_i$ and $d_j$, unlike in the anisotropic case, do not decouple. This changes the way in which these variables must be treated.
+
+Enforcing the constraints as we did in the anisotropic case, adding penalty function terms and applying the Bregman iteration, we have:
+
+$$\min_{d_i,d_j} \left\{ ||(d_i,d_j)||_2 + \dfrac{\mu}{2} ||x-f||_2^2 \dfrac{\lambda}{2} ||d_i - D_i x - b_i ||_2^2 + \dfrac{\lambda}{2} ||d_j - D_j x - b_j ||_2^2 \right\}$$
+
+The resulting scheme is the following:
+
+\begin{align*}
+x^{(k+1)} &= \argmin_x \left\{ \frac{\mu}{2}||x-f||_2^2 + \frac{\lambda}{2}\left|\left|d_i^{(k)} - D_i x - b_i^{(k)}\right|\right|_2^2 + \right. \\
+&\left. \qquad+\frac{\lambda}{2}\left|\left|d_j^{(k)} - D_j x - b_j^{(k)}\right|\right|_2^2 \right\} \\
+\\
+\left(d_i^{(k+1)},d_j^{(k+1)}\right) &= \argmin_{d_i,d_j} \left\{ \left|\left|(d_i,d_j)\right|\right|_2 + \frac{\lambda}{2} \left|\left|d_i - D_i x^{(k)} - b_i^{(k)} \right|\right|_2^2 + \right. \\
+&\left. \qquad+\frac{\lambda}{2} \left|\left|d_j - D_j x^{(k)} - b_j^{(k)} \right|\right|_2^2 \right\} \\
+\\
+b_i^{(k+1)} &= b_i^{(k)} + \left(D_i x^{(k+1)} - d_i^{(k+1)}\right) \\
+\\
+b_j^{(k+1)} &= b_j^{(k)} + \left(D_j x^{(k+1)} - d_j^{(k+1)}\right)
+\end{align*}
+
+Despite the fact that $d_i$ and $d_j$ do not decouple as in the anisotropic case, we can still explicitly solve the minimization problem using a generalized shrinkage formula:
+
+\begin{align*}
+d_i^{(k+1)} &= \max \left(s^{(k)} - \dfrac{1}{\lambda},0\right) \dfrac{D_i x^{(k)} + b_i^{(k)}}{s^{(k)}} \\
+d_j^{(k+1)} &= \max \left(s^{(k)} - \dfrac{1}{\lambda},0\right) \dfrac{D_j x^{(k)} + b_j^{(k)}}{s^{(k)}}
+\end{align*}
+
+where
+
+\begin{align}
+\label{iso:sk} s^{(k)} = \sqrt{\left(D_i x^{(k)} + b_i^{(k)}\right)^2 + \left(D_j x^{(k)} + b_j^{(k)}\right)^2}
+\end{align}
+
+If we apply once again the Bregman iteration to this problem, we get the minimization algorithm for the isotropic TV functional:
+
+\begin{algorithm}[H]
+\caption{Split Bregman method for Isotropic TV}
+\begin{algorithmic}
+\STATE $x^{(0)} = f$
+\STATE
+\STATE $d_i^{(0)} = d_j^{(0)} = b_i^{(0)} = b_j^{(0)}=0$
+\STATE
+\WHILE{ $\left|\left|x^{(k)}-u^{k-1}\right|\right|_2 > tol$}
+\STATE
+\STATE $x^{(k+1)} = G^{(k)}$
+\STATE
+\STATE $d_i^{(k+1)} = \max \left(s^{(k)} - \dfrac{1}{\lambda},0\right) \dfrac{D_i x^{(k)} + b_i^{(k)}}{s^{(k)}}$
+\STATE
+\STATE $d_j^{(k+1)} = \max \left(s^{(k)} - \dfrac{1}{\lambda},0\right) \dfrac{D_j x^{(k)} + b_j^{(k)}}{s^{(k)}}$
+\STATE
+\STATE $b_i^{(k+1)} = b_i^{(k)} + \left(D_i x^{(k+1)} - d_i^{(k+1)}\right)$
+\STATE
+\STATE $b_j^{(k+1)} = b_j^{(k)} + \left(D_j x^{(k+1)} - d_j^{(k+1)}\right)$
+\ENDWHILE
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Poisson noise}
+
+We consider the following denoising problem for data affected by Poisson noise:
+
+\begin{align}
+\label{pidproblem}
+\min_{x \in X} \left\{ \sum_{i=1}^n f_i \log{\dfrac{f_i}{x_i}}+x_i-f_i + \beta \sum_{i=1}^n ||A_i x||_2 \right\}
+\end{align}
+
+where $X$ is the same as defined in \eqref{domain} and $A$ is the matrix defined in \eqref{matrixA}. We will denote by $\Phi(Ax)$ the term $ \sum_{i=1}^n ||A_i x||_2$.
+
+\subsubsection{PIDAL and PIDSplit+ algorithms}
+
+In \citep{deblurring} the authors propose two different versions for the split Bregman iteration. In order to decouple the KL function and the TV, we begin by setting as constraints $w_1 = x$ and $w_2 = x$.
+
+We then add to \eqref{pidproblem} the term $\dfrac{1}{2\gamma} ||x-w_1||_2^2 + \dfrac{1}{2\gamma} ||x-w_2^2||_2^2$
+
+We have to minimize
+
+$$ \sum_{i=1}^n f_i \log \dfrac{f_i}{(w_1)_i}+(w_1)_i - f_i + \beta \Phi(Aw_2) + \dfrac{1}{2\gamma} ||x-w_1||_2^2 + \dfrac{1}{2\gamma} ||x-w_2^2||_2^2 $$
+
+The algorithm to solve this unconstrained problem is named PIDAL and it is stated as follows:
+
+\begin{algorithm}[H]
+\caption{PIDAL}
+\begin{algorithmic}
+\STATE $b_1^{(0)} = b_2^{(0)} = 0$
+\STATE
+\STATE $w_1^{(0)} = f$
+\STATE
+\STATE $w_2^{(0)} = f$
+\STATE
+\FOR{$k=1,...$ until a stopping criterion is reached}
+\STATE
+\STATE $x^{(k+1)} = \argmin_x \left\{ \left|\left|b_1^{(k)}+x-w_1^{(k)}\right|\right|_2^2 + \left|\left|b_2^{(k)}+x-w_2^{(k)}\right|\right|_2^2 \right\}$
+\STATE
+\STATE $w_1^{(k+1)} = \argmin_{w_1} \left\{ \displaystyle \sum_{i=1}^n \left( f_i \log \frac{f_i}{(w_1)_i} + (w_1)_i -f_i\right) + \right.$
+\STATE $\left.\qquad\qquad + \dfrac{1}{2\gamma} \left|\left|b_1^{(k)} + x^{(k+1)} - w_1 \right|\right|_2^2 \right\}$
+\STATE
+\STATE $w_2^{(k+1)} = \argmin_{w_2} \left\{\beta \Phi(Aw_2) + \dfrac{1}{2\gamma}\left|\left|b_2^{(k)}+x^{(k+1)} - w_2\right|\right|_2^2\right\}$
+\STATE
+\STATE $b_1^{(k+1)} = b_1^{(k)} + x^{(k+1)} -w_1^{(k+1)}$
+\STATE
+\STATE $b_2^{(k+1)} = b_2^{(k)} + x^{(k+1)} -w_2^{(k+1)}$
+\ENDFOR
+\end{algorithmic}
+\end{algorithm}
+
+The first two steps can be solved explicitly:
+
+\begin{align*}
+x^{(k+1)} &= \left(\left(w_1^{(k)} -b_1^{(k)}\right) + \left(w_2^{(k)} -b_2^{(k)}\right) \right) / 2 \\
+w_1^{(k+1)} &= \dfrac{1}{2} \left(b_1^{(k)} + x^{(k+1)} - \gamma + \sqrt{\left(b_1^{(k)} + x^{(k+1)}-\gamma\right)^2 + 4\gamma f} \right)
+\end{align*}
+
+For the third step we use a method for the denoising problem with Gaussian noise.
+
+The PIDAL algorithm ensures that the sequence $w_1^{(k+1)}$ is nonnegative and it converges to a nonnegative image, but at every step we have to apply a Split Bregman Method (or another one) to determine $w_2^{(k+1)}$.
+
+In order to simplify the approach, we introduce the indicator function: let $l_{x \geq \eta}$ denote the indicator function of $X$ defined as
+
+$$ l_{x \geq \eta} (x) = \left \{ \begin{array}{ll}
+0 & x \geq \eta \\
+\infty & \mbox{ otherwise}\end{array} \right.
+$$
+
+We then apply the alternating split Bregman algorithm to:
+
+\begin{align} \label{pidal}
+\min_x \left\{ \sum_{i=1}^n x_i - f_i log(x_i) + \beta \Phi(Ax) + l_{x\geq \eta} \right\}
+\end{align}
+
+We can see this problem as the sum of three different functionals:
+
+\begin{align*}
+f_1(x) &:= \sum_{i=1}^n x_i - f_i log(x_i) \\
+f_2(Ax) &:= \beta \Phi(Ax) \\
+f_3(x) &:= l_{x\geq \eta}
+\end{align*}
+
+With this substitution we have now three constraints, $w_1 = x$, $w_2 = Ax$, $w_3 = x$.
+
+The corrisponding split Bregman algorithm is called \textbf{PIDSplit+}.
+
+We add to \eqref{pidal} the term $\dfrac{1}{2\gamma}\left(||x-w_1||_2^2 + ||Ax-w_2 ||_2^2 + ||x-w_3||_2^2\right)$.
+
+The PIDSplit+ algorithm is then:
+
+\begin{algorithm}[H]
+\caption{PIDSplit+}
+\begin{algorithmic}
+\STATE $b_1^{(0)} = b_2^{(0)} = b_3^{(0)} = 0$
+\STATE $w_1^{(0)} = f$
+\STATE $w_2^{(0)} = Af$
+\STATE $w_3^{(0)} = f$
+\FOR{$k=1,...$ until a stopping criterion is reached}
+\STATE $x^{(k+1)} = \argmin_x \left\{ \left|\left|b_1^{(k)}+x-w_1^{(k)}\right|\right|_2^2 + \left|\left|b_2^{(k)} + Ax -w_2^{(k)}\right|\right|_2^2 + \right.$
+\STATE $\left. \qquad\qquad + \left|\left|b_3^{(k)}+x-w_3^{(k)}\right|\right|_2^2 \right\}$
+\STATE
+\STATE $w_1^{(k+1)} = \argmin_{w_1} \left\{ \displaystyle \sum_{i=1}^n (w_1)_i - f_i \log\Bigl((w_1)_i\Bigr)+\dfrac{1}{2\gamma} \left|\left|b_1^{(k)} + x^{(k+1)} - w_1 \right|\right|_2^2\right\}$
+\STATE
+\STATE $w_2^{(k+1)} = \argmin_{w_2} \left\{ \beta ||w_2||_2 + \dfrac{1}{2\gamma}\left|\left|b_2^{(k)}+Ax^{(k+1)} - w_2\right|\right|_2^2 \right\}$
+\STATE
+\STATE $w_3^{(k+1)} = \argmin_{w_3} \left\{ l_{w_3 \geq \eta} (w_3) + \dfrac{1}{2\gamma}\left|\left|b_3^{(k)} + x^{(k+1)}-w_3\right|\right|_2^2 \right\}$
+\STATE
+\STATE $b_1^{(k+1)} = b_1^{(k)} + x^{(k+1)} -w_1^{(k+1)}$
+\STATE
+\STATE $b_2^{(k+1)} = b_2^{(k)} + Ax^{(k+1)} -w_2^{(k+1)}$
+\STATE
+\STATE $b_3^{(k+1)} = b_3^{(k)} + x^{(k+1)} - w_3^{(k+1)}$
+\ENDFOR
+\end{algorithmic}
+\end{algorithm}
+
+Since $w_3^{(k)} \in X \,\; \forall k$, we prefer it over $x^{(k+1)}$ as output for the previous algorithm.
+
+A direct consequence of this scheme is that we no longer need to solve a denoising problem for Gaussian noise as inner iteration loop; instead, $w_1^{(k+1)}, w_2^{(k+1)},w_3^{(k+1)}$ can be computed directly and we get $x^{(k+1)}$ by solving this linear system of equations:
+
+\begin{align*}
+x^{(k+1)} &= \left(2I + A^T A\right)^{-1} \left(\left(w_1^{(k)}-b_1^{(k)}\right) + A^T\left(w_2^{(k)}-b_2^{(k)}\right)+\left(w_3^{(k)}-b_3^{(k)}\right)\right) \\
+\\
+w_1^{(k+1)} &= \frac{1}{2} \left(b_1^{(k)} + x^{(k+1)} - \gamma + \sqrt{(b_1^{(k)} + x^{(k+1)} - \gamma)^2 + 4\gamma b} \right) \\
+\\
+w_2^{(k+1)} &= shrink\left(b_2^{(k)} + Ax^{(k+1)},\gamma\right) \\
+\\
+w_3^{(k+1)} &= \begin{dcases*}
+b_3^{(k)} + y^{(k+1)} & if $b_3^{(k)}+x^{(k+1)} \geq \eta$ \\
+0 & otherwise
+\end{dcases*}
+\end{align*}
+
+A very efficient way to compute $\left(2I+A^TA\right)^{-1}$ is to apply the Discrete Fourier Transform as shown in Section \ref{app:circ}. 
